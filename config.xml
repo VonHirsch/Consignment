@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<module>
+    <namespace>Consignment</namespace>
+    <version>1.0</version>
+    <author>Bart Hirst</author>
+    <name>Consignment</name>
+    <description>Consignment Module</description>
+</module>
