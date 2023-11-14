@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Consignment\Http\Controllers\ConsignmentCrudTest;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,3 +26,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+// Crud Test Route
+Route::get( '/dashboard/Consignment/flights', [ ConsignmentCrudTest::class, 'flightList' ]);
