@@ -325,11 +325,11 @@ class FlightCrud extends CrudService
      */
     public function getColumns() {
         return [
-            'id'  =>  [
-                'label'  =>  __( 'Id' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'id'  =>  [
+//                'label'  =>  __( 'Id' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
             'name'  =>  [
                 'label'  =>  __( 'Name' ),
                 '$direction'    =>  '',
@@ -340,16 +340,16 @@ class FlightCrud extends CrudService
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
-            'created_at'  =>  [
-                'label'  =>  __( 'Created_at' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'updated_at'  =>  [
-                'label'  =>  __( 'Updated_at' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'created_at'  =>  [
+//                'label'  =>  __( 'Created_at' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'updated_at'  =>  [
+//                'label'  =>  __( 'Updated_at' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
                     ];
     }
 

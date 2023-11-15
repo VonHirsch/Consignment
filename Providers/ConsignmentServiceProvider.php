@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider as CoreServiceProvider;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
 use Modules\Consignment\Crud\FlightCrud;
+use Modules\Consignment\Crud\ProductCrud;
 
 class ConsignmentServiceProvider extends CoreServiceProvider
 {
@@ -79,6 +80,7 @@ class ConsignmentServiceProvider extends CoreServiceProvider
 
         switch( $identifier ) {
             case 'consignment.flights': return FlightCrud::class;  // case 'crud namespace' as defined in the model class returned
+            case 'consignment.products': return ProductCrud::class;
             default: return $identifier; // required
         }
     }

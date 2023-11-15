@@ -4,6 +4,7 @@ use App\Http\Middleware\Authenticate;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use Modules\Consignment\Http\Controllers\ConsignmentCrudTest;
+use Modules\Consignment\Http\Controllers\ConsignmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,11 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::get( '/Consignment/flights', [ ConsignmentCrudTest::class, 'flightList' ]);
         Route::get( '/Consignment/flights/create', [ ConsignmentCrudTest::class, 'createFlight' ]);
         Route::get( '/Consignment/flights/edit/{flight}', [ ConsignmentCrudTest::class, 'editFlight' ]);
+
+        // Consignment Product
+        Route::get( '/consignment/products', [ ConsignmentController::class, 'productList' ]);
+        Route::get( '/consignment/products/create', [ ConsignmentController::class, 'createProduct' ]);
+        Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);
 
     });
 });
