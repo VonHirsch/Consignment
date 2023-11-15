@@ -138,6 +138,11 @@ class ProductCrud extends CrudService
         parent::__construct();
 
         Hook::addFilter( $this->namespace . '-crud-actions', [ $this, 'addActions' ], 10, 2 );
+
+        // Filter consignment item list by author (user.id)
+        $this->listWhere = [
+            'nexopos_products.author' => Auth::id()
+        ];
     }
 
     /**
@@ -565,11 +570,11 @@ class ProductCrud extends CrudService
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
-            'author'  =>  [
-                'label'  =>  __( 'Author' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'author'  =>  [
+//                'label'  =>  __( 'Author' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
 //            'uuid'  =>  [
 //                'label'  =>  __( 'Uuid' ),
 //                '$direction'    =>  '',
