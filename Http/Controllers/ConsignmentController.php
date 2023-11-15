@@ -11,6 +11,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use App\Http\Controllers\DashboardController;
+use Modules\Consignment\ConsignmentModule;
 use Modules\Consignment\Crud\ProductCrud;
 
 // https://my.nexopos.com/en/documentation/crud-api/how-to-create-a-crud-component
@@ -28,7 +29,6 @@ class ConsignmentController extends DashboardController
         return ProductCrud::table([
             'title' => __( 'My Consignment Items' )
         ]);
-
     }
 
     public function createProduct()
@@ -40,6 +40,10 @@ class ConsignmentController extends DashboardController
     public function editProduct( Product $product )
     {
         ns()->restrict([ 'nexopos.consignment' ]);
+
+        // This prevents someone from viewing another's item
+        ConsignmentModule::CheckAuthor($product->author);
+
         return ProductCrud::form( $product );
     }
 

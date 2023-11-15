@@ -8,9 +8,11 @@ use App\Services\Users;
 use App\Services\CrudEntry;
 use App\Exceptions\NotAllowedException;
 use App\Models\User;
+use Modules\Consignment\ConsignmentModule;
 use TorMorten\Eventy\Facades\Events as Hook;
 use Exception;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
 
 class ProductCrud extends CrudService
 {
@@ -43,10 +45,10 @@ class ProductCrud extends CrudService
      * @param array
      */
     protected $permissions  =   [
-        'create'    =>  true,
-        'read'      =>  true,
-        'update'    =>  true,
-        'delete'    =>  true,
+        'create'    =>  'nexopos.consignment',
+        'read'      =>  'nexopos.consignment',
+        'update'    =>  'nexopos.consignment',
+        'delete'    =>  'nexopos.consignment',
     ];
 
     /**
@@ -354,6 +356,9 @@ class ProductCrud extends CrudService
      */
     public function beforePost( $request )
     {
+
+        // Author Check not required on post as the item will always be created with the logged on user's AuthID
+
         if ( $this->permissions[ 'create' ] !== false ) {
             ns()->restrict( $this->permissions[ 'create' ] );
         } else {
@@ -383,7 +388,9 @@ class ProductCrud extends CrudService
     public function get( $param )
     {
         switch( $param ) {
-            case 'model' : return $this->model ; break;
+            case 'model' :
+                return $this->model ;
+                break;
         }
     }
 
@@ -395,6 +402,11 @@ class ProductCrud extends CrudService
      */
     public function beforePut( $request, $entry )
     {
+        // Request is the form data, Entry is the Product being Modified
+
+        // This prevents someone editing another's item
+        ConsignmentModule::CheckAuthor($entry->author);
+
         if ( $this->permissions[ 'update' ] !== false ) {
             ns()->restrict( $this->permissions[ 'update' ] );
         } else {
@@ -420,6 +432,10 @@ class ProductCrud extends CrudService
      * @return void
      */
     public function beforeDelete( $namespace, $id, $model ) {
+
+        // This prevents someone deleting another's item
+        ConsignmentModule::CheckAuthor($model->author);
+
         if ( $namespace == 'consignment.products' ) {
             /**
              *  Perform an action before deleting an entry
@@ -549,11 +565,11 @@ class ProductCrud extends CrudService
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
-//            'author'  =>  [
-//                'label'  =>  __( 'Author' ),
-//                '$direction'    =>  '',
-//                '$sort'         =>  false
-//            ],
+            'author'  =>  [
+                'label'  =>  __( 'Author' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false
+            ],
 //            'uuid'  =>  [
 //                'label'  =>  __( 'Uuid' ),
 //                '$direction'    =>  '',
@@ -613,6 +629,8 @@ class ProductCrud extends CrudService
          * and supervisor.
          */
 
+        // TODO: Check Author Here for each product
+
         if ( $request->input( 'action' ) == 'delete_selected' ) {
 
             /**
@@ -631,7 +649,7 @@ class ProductCrud extends CrudService
 
             foreach ( $request->input( 'entries' ) as $id ) {
                 $entity     =   $this->model::find( $id );
-                if ( $entity instanceof Product ) {
+                if ( $entity instanceof Product && $entity->author === Auth::id() ) {   // prevent bulk-delete of another's items, although this shouldn't be a possible scenario
                     $entity->delete();
                     $status[ 'success' ]++;
                 } else {

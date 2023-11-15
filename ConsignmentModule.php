@@ -1,9 +1,11 @@
 <?php
 namespace Modules\Consignment;
 
-use App\Services\Module;
 use App\Classes\Hook;
+use App\Services\Module;
+use App\Exceptions\NotAllowedException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ConsignmentModule extends Module
 {
@@ -34,6 +36,16 @@ class ConsignmentModule extends Module
             return $menus; // <= do not forget
         });
 
+    }
+
+    /**
+     * check that the current user is the author of the product
+     */
+    public static function CheckAuthor( $author )
+    {
+        if ( $author !== Auth::id() ) {
+            throw new NotAllowedException;
+        }
     }
 
 }
