@@ -7,6 +7,7 @@
 **/
 
 namespace Modules\Consignment\Http\Controllers;
+use App\Models\Product;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use App\Http\Controllers\DashboardController;
