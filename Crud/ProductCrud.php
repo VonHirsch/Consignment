@@ -101,14 +101,18 @@ class ProductCrud extends CrudService
     /**
      * If few fields should only be filled
      * those should be listed here.
+     * These determine which fields will be in the default insert statement
      */
-    //public $fillable    =   "name, tax_value, unit_group, description, author";
     public $fillable = [
         'name',
         //'tax_value',
         //'unit_group',
         'description',
-        //'author',
+        'barcode',
+        'barcode_type',
+        'sku',
+        'unit_group',
+        'author',
     ];
 
     /**
@@ -233,11 +237,11 @@ class ProductCrud extends CrudService
 //                            'label' =>  __( 'Stock_management' ),
 //                            'value' =>  $entry->stock_management ?? '',
 //                        ], [
-//                            'type'  =>  'text',
-//                            'name'  =>  'barcode',
-//                            'label' =>  __( 'Barcode' ),
-//                            'value' =>  $entry->barcode ?? '',
-//                        ], [
+                            'type'  =>  'hidden',
+                            'name'  =>  'barcode',
+                            'label' =>  __( 'Barcode' ),
+                            'value' =>  $entry->barcode ?? '',
+                        ], [
 //                            'type'  =>  'text',
 //                            'name'  =>  'barcode_type',
 //                            'label' =>  __( 'Barcode_type' ),
@@ -321,6 +325,15 @@ class ProductCrud extends CrudService
      */
     public function filterPostInputs( $inputs )
     {
+        # TODO - Calculate / hardcode
+        $inputs[ 'barcode' ] = '123';
+        $inputs[ 'sku' ] = 'abc';
+        $inputs[ 'unit_group' ] = 1;    // hardcode to consignment
+
+
+        $inputs[ 'author' ] = Auth::id();
+        $inputs[ 'barcode_type' ] = 'code128';
+
         return $inputs;
     }
 
