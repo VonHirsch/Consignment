@@ -11,7 +11,7 @@ class ConsignmentModule extends Module
     {
         parent::__construct( __FILE__ );
 
-        Log::debug('ConsignmentDebug : ' . __FUNCTION__);
+        //Log::debug('ConsignmentDebug : ' . __FUNCTION__);
 
         // Dashboard Menus
         // https://my.nexopos.com/en/documentation/filters/ns-dashboard-menus

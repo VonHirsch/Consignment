@@ -14,3 +14,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+
+// Crud takes care of these somehow ...
+// Create
+//Route::post( 'consignmentItems', [ ConsignmentProductsController::class, 'saveProduct' ]);
+// Edit
+//Route::put( 'consignmentItems/{identifier}', [ ConsignmentProductsController::class, 'updateProduct' ]);
+// Delete
+//Route::delete( 'consignmentItems/{identifier}', [ ConsignmentProductsController::class, 'deleteProduct' ]);
+

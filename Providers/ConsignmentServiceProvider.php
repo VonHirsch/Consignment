@@ -37,7 +37,7 @@ class ConsignmentServiceProvider extends CoreServiceProvider
     public function register()
     {
 
-        Log::debug('ConsignmentDebug : ' . __FUNCTION__);
+        //Log::debug('ConsignmentDebug : ' . __FUNCTION__);
 
         // Register our Crud Test (see function below)
         Hook::addFilter( 'ns-crud-resource', [ $this, 'registerCrud' ]);
@@ -62,9 +62,21 @@ class ConsignmentServiceProvider extends CoreServiceProvider
 
     }
 
+    /**
+     * Boot services.  This method is called right after the method "register" of all enabled modules.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        //Log::debug('ConsignmentDebug : ' . __FUNCTION__);
+    }
+
     public function registerCrud( $identifier )
     {
-        Log::debug('ConsignmentDebug : ' . __FUNCTION__);
+
+        //Log::debug('ConsignmentDebug : ' . __FUNCTION__);
+
         switch( $identifier ) {
             case 'consignment.flights': return FlightCrud::class;  // case 'crud namespace' as defined in the model class returned
             default: return $identifier; // required

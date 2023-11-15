@@ -24,7 +24,7 @@ class FlightCrud extends CrudService
      * default slug
      * @param string
      */
-    protected $slug   =   'id';
+    protected $slug   =   'Consignment/flights';
 
     /**
      * Define namespace
@@ -102,7 +102,10 @@ class FlightCrud extends CrudService
      * If few fields should only be filled
      * those should be listed here.
      */
-    public $fillable    =   "name, airline";
+    public $fillable = [
+        'name',
+        'airline'
+    ];
 
     /**
      * If fields should be ignored during saving
@@ -175,11 +178,11 @@ class FlightCrud extends CrudService
                     'label'     =>  __( 'General' ),
                     'fields'    =>  [
                         [
-                            'type'  =>  'text',
-                            'name'  =>  'id',
-                            'label' =>  __( 'Id' ),
-                            'value' =>  $entry->id ?? '',
-                        ], [
+//                            'type'  =>  'text',
+//                            'name'  =>  'id',
+//                            'label' =>  __( 'Id' ),
+//                            'value' =>  $entry->id ?? '',
+//                        ], [
                             'type'  =>  'text',
                             'name'  =>  'name',
                             'label' =>  __( 'Name' ),
@@ -189,16 +192,16 @@ class FlightCrud extends CrudService
                             'name'  =>  'airline',
                             'label' =>  __( 'Airline' ),
                             'value' =>  $entry->airline ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'created_at',
-                            'label' =>  __( 'Created_at' ),
-                            'value' =>  $entry->created_at ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'updated_at',
-                            'label' =>  __( 'Updated_at' ),
-                            'value' =>  $entry->updated_at ?? '',
+//                        ], [
+//                            'type'  =>  'text',
+//                            'name'  =>  'created_at',
+//                            'label' =>  __( 'Created_at' ),
+//                            'value' =>  $entry->created_at ?? '',
+//                        ], [
+//                            'type'  =>  'text',
+//                            'name'  =>  'updated_at',
+//                            'label' =>  __( 'Updated_at' ),
+//                            'value' =>  $entry->updated_at ?? '',
                         ],                     ]
                 ]
             ]
@@ -429,9 +432,9 @@ class FlightCrud extends CrudService
     public function getLinks(): array
     {
         return  [
-            'list'      =>  ns()->url( 'dashboard/' . 'id' ),
-            'create'    =>  ns()->url( 'dashboard/' . 'id/create' ),
-            'edit'      =>  ns()->url( 'dashboard/' . 'id/edit/' ),
+            'list'      =>  ns()->url( 'dashboard/' . 'Consignment/flights' ),
+            'create'    =>  ns()->url( 'dashboard/' . 'Consignment/flights/create' ),
+            'edit'      =>  ns()->url( 'dashboard/' . 'Consignment/flights/edit/' ),
             'post'      =>  ns()->url( 'api/nexopos/v4/crud/' . 'consignment.flights' ),
             'put'       =>  ns()->url( 'api/nexopos/v4/crud/' . 'consignment.flights/{id}' . '' ),
         ];
