@@ -130,7 +130,7 @@ class ProductCrud extends CrudService
         'barcode_type',
         'sku',
         'unit_group',
-        'author',
+        'author',     // if you include author in fillable, there's logic in the CrudService to overwrite it with Auth::Id even when an edit is performed, which I've commented out for now
         'category_id',
         'type'
     ];
@@ -145,7 +145,7 @@ class ProductCrud extends CrudService
      * Determine if the options column should display
      * before the crud columns
      */
-    protected $prependOptions     =   false;
+    protected $prependOptions     =   true;
 
     /**
      * Define Constructor
@@ -157,10 +157,14 @@ class ProductCrud extends CrudService
 
         Hook::addFilter( $this->namespace . '-crud-actions', [ $this, 'addActions' ], 10, 2 );
 
-        // Filter consignment item list by author (user.id)
-        $this->listWhere = [
-            'nexopos_products.author' => Auth::id()
-        ];
+        $user = app()->make( Users::class );
+        if ( $user->is([ 'user' ]) ) {
+            // Filter consignment item list by author (user.id) when the user is part of the default 'user' group
+            $this->listWhere = [
+                'nexopos_products.author' => Auth::id()
+            ];
+        }
+
     }
 
     /**
@@ -379,6 +383,7 @@ class ProductCrud extends CrudService
      */
     public function filterPostInputs( $inputs )
     {
+
         $this->validatePriceAndQty($inputs);
 
         /*
@@ -863,9 +868,16 @@ class ProductCrud extends CrudService
                 'failed'    =>  0
             ];
 
+            $notDefaultUser = false;
+
+            $user = app()->make( Users::class );
+            if (! $user->is([ 'user' ]) ) {
+                $notDefaultUser = true;
+            }
+
             foreach ( $request->input( 'entries' ) as $id ) {
                 $entity     =   $this->model::find( $id );
-                if ( $entity instanceof Product && $entity->author === Auth::id() ) {   // prevent bulk-delete of another's items, although this shouldn't be a possible scenario
+                if ( $entity instanceof Product && ( $entity->author === Auth::id() || $notDefaultUser ) ) {   // prevent bulk-delete of another's items.  Non-default users can bulk-delete regardless of author id
                     $this->deleteProductAttachedRelation( $entity );
                     $entity->delete();
                     $status[ 'success' ]++;

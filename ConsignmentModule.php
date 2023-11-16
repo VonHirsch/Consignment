@@ -4,6 +4,7 @@ namespace Modules\Consignment;
 use App\Classes\Hook;
 use App\Services\Module;
 use App\Exceptions\NotAllowedException;
+use App\Services\Users;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
@@ -45,6 +46,12 @@ class ConsignmentModule extends Module
      */
     public static function CheckAuthor( $author )
     {
+        $user = app()->make( Users::class );
+        if (! $user->is([ 'user' ]) ) {
+            // Any non-vanilla user can CRUD consignment items they haven't authored
+            return;
+        }
+
         if ( $author !== Auth::id() ) {
             throw new NotAllowedException;
         }
