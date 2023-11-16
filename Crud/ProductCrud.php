@@ -3,6 +3,7 @@ namespace Modules\Consignment\Crud;
 
 use App\Models\ProductCategory;
 use App\Models\ProductUnitQuantity;
+use App\Models\UnitGroup;
 use App\Services\BarcodeService;
 use App\Services\CurrencyService;
 use App\Services\TaxService;
@@ -190,6 +191,22 @@ class ProductCrud extends CrudService
      */
     public function getForm( $entry = null )
     {
+
+        if ( $entry instanceof Product ) {
+
+            $unitGroup = UnitGroup::where( 'id', $entry->unit_group )->with( 'units' )->first() ?? [];
+
+            // Get a handle to product unit quantities (by productID) and peel off the quantity and sale_price
+            $unitQuantity = $this->getUnitQuantity(
+                $entry->id,
+                $unitGroup->id
+            );
+
+            $entry->sale_price_edit = $unitQuantity->sale_price_edit;
+            $entry->quantity = $unitQuantity->quantity;
+
+        }
+
         return [
             'main' =>  [
                 'label'         =>  __( 'Name' ),
@@ -271,7 +288,7 @@ class ProductCrud extends CrudService
 //                        ], [
                             'type'  =>  'text',
                             'name'  =>  'sale_price_edit',
-                            'label' =>  __( 'Price' ),
+                            'label' =>  __( 'Sale Price' ),
                             'value' =>  $entry->sale_price_edit ?? '',
                             'validation' => 'required',
                         ], [
@@ -354,6 +371,7 @@ class ProductCrud extends CrudService
      */
     public function filterPostInputs( $inputs )
     {
+        $this->validatePriceAndQty($inputs);
 
         /*
          * Technically we should use the barcodeService to generate this
@@ -389,7 +407,32 @@ class ProductCrud extends CrudService
      */
     public function filterPutInputs( $inputs, Product $entry )
     {
+        $this->validatePriceAndQty($inputs);
         return $inputs;
+    }
+
+    /**
+     * Validate Price And Qty
+     * @param array of fields
+     * @throws Exception
+     */
+    public function validatePriceAndQty( $inputs )
+    {
+        $price = $inputs[ 'sale_price_edit'];
+        $quantity = $inputs[ 'quantity'];
+
+        if (!is_numeric($price) || $price <= 0) {
+            throw new Exception( __( 'Sale Price must be a positive number.' ) );
+        }
+
+        if (!is_numeric($quantity)) {
+            throw new Exception( __('Quantity must be a positive whole number.' ) );
+        }
+
+        if ($quantity <= 0 || (floor($quantity) != $quantity) ) {
+            throw new Exception( __('Quantity must be a positive whole number.' ) );
+        }
+
     }
 
     /**
@@ -419,25 +462,26 @@ class ProductCrud extends CrudService
      */
     public function afterPost( $request, Product $entry )
     {
-        // Request is the form data, Entry is the Product being Modified
+        // Request is the form data, Entry is the Product that was created
 
-        // Hardcode units for Consignment items
+        // Hardcode units for Consignment items - TODO: Make dynamic based on name
         $request[ 'units' ] = array
         (
             'accurate_tracking' => 0,
-            'unit_group' => 1,
+            'unit_group' => 1,                      // Assume unit_group 1 is "consignment" created by us during setup
             'selling_group' =>
                 array (
                     0 =>
                         array (
-                            'unit_id' => 1,
-                            'sale_price_edit' => $request[ 'sale_price_edit' ],
+                            'unit_id' => 1,         // Assume unit_id 1 is "single" created by us during setup
+                            'sale_price_edit' => round($request[ 'sale_price_edit' ], 2),
                             'quantity' => $request[ 'quantity' ],
-                            'wholesale_price_edit' => $request[ 'sale_price_edit' ],
+                            'wholesale_price_edit' => round($request[ 'sale_price_edit' ], 2),
                         ),
                 ),
         );
 
+        // This will create the associated product_unit_quantities record based on the hardcoded array above
         $this->__computeUnitQuantities( $request,  $entry );
 
         return $request;
@@ -468,7 +512,9 @@ class ProductCrud extends CrudService
                     $unitQuantity = new ProductUnitQuantity;
                     $unitQuantity->unit_id = $group[ 'unit_id' ];
                     $unitQuantity->product_id = $product->id;
-                    $unitQuantity->quantity = 0;
+                    $unitQuantity->quantity = $group[ 'quantity' ]; // new item
+                } else {
+                    $unitQuantity->quantity = $group[ 'quantity' ]; // edit item
                 }
 
                 /**
@@ -476,22 +522,34 @@ class ProductCrud extends CrudService
                  * available on the group variable, that's why we define
                  * explicitly how everything is saved here.
                  */
+
+                // The $currencyService we created isn't initialized properly, so we're losing precision in the prices
+                // TODO: Find a way to get the global CurrencyService singleton.  Other classes get it in their constructors, maybe we can get it passed to our module constructor somehow
+                /*
                 $unitQuantity->sale_price = $currencyService->define( $group[ 'sale_price_edit' ] )->getRaw();
                 $unitQuantity->sale_price_edit = $currencyService->define( $group[ 'sale_price_edit' ] )->getRaw();
                 $unitQuantity->wholesale_price_edit = $currencyService->define( $group[ 'wholesale_price_edit' ] )->getRaw();
+                */
+
+                $unitQuantity->sale_price = $group[ 'sale_price_edit' ];
+                $unitQuantity->sale_price_edit = $group[ 'sale_price_edit' ];
+                $unitQuantity->wholesale_price_edit = $group[ 'wholesale_price_edit' ];
                 $unitQuantity->preview_url = $group[ 'preview_url' ] ?? '';
                 $unitQuantity->low_quantity = $group[ 'low_quantity' ] ?? 0;
                 $unitQuantity->stock_alert_enabled = $group[ 'stock_alert_enabled' ] ?? false;
 
+                // TODO: Same thing for TaxService
                 /**
                  * Let's compute the tax only
                  * when the tax group is provided.
                  */
+                /*
                 $taxService->computeTax(
                     $unitQuantity,
                     $fields[ 'tax_group_id' ] ?? null,
                     $fields[ 'tax_type' ] ?? null
                 );
+                */
 
                 /**
                  * save custom barcode for the created unit quantity
@@ -553,6 +611,7 @@ class ProductCrud extends CrudService
      */
     public function afterPut( $request, $entry )
     {
+        $this->afterPost($request, $entry); // update price & qty
         return $request;
     }
 
@@ -561,9 +620,6 @@ class ProductCrud extends CrudService
      * @return void
      */
     public function beforeDelete( $namespace, $id, $model ) {
-
-        // This prevents someone deleting another's item
-        ConsignmentModule::CheckAuthor($model->author);
 
         if ( $namespace == 'consignment.products' ) {
             /**
@@ -577,6 +633,12 @@ class ProductCrud extends CrudService
             **/
             if ( $this->permissions[ 'delete' ] !== false ) {
                 ns()->restrict( $this->permissions[ 'delete' ] );
+
+                // This prevents someone from deleting another's item
+                ConsignmentModule::CheckAuthor($model->author);
+
+                // TODO: Delete associated product unit quantity record
+
             } else {
                 throw new NotAllowedException;
             }
@@ -639,23 +701,23 @@ class ProductCrud extends CrudService
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
-            'barcode'  =>  [
-                'label'  =>  __( 'Barcode' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'barcode_type'  =>  [
-                'label'  =>  __( 'Barcode_type' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'sku'  =>  [
-                'label'  =>  __( 'Sku' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'barcode_type'  =>  [
+//                'label'  =>  __( 'Barcode_type' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'sku'  =>  [
+//                'label'  =>  __( 'Sku' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
             'description'  =>  [
                 'label'  =>  __( 'Description' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false
+            ],
+            'barcode'  =>  [
+                'label'  =>  __( 'Barcode' ),
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
@@ -664,11 +726,11 @@ class ProductCrud extends CrudService
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
-            'category_id'  =>  [
-                'label'  =>  __( 'Category_id' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'category_id'  =>  [
+//                'label'  =>  __( 'Category_id' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
 //            'parent_id'  =>  [
 //                'label'  =>  __( 'Parent_id' ),
 //                '$direction'    =>  '',
@@ -758,8 +820,6 @@ class ProductCrud extends CrudService
          * and supervisor.
          */
 
-        // TODO: Check Author Here for each product
-
         if ( $request->input( 'action' ) == 'delete_selected' ) {
 
             /**
@@ -779,6 +839,7 @@ class ProductCrud extends CrudService
             foreach ( $request->input( 'entries' ) as $id ) {
                 $entity     =   $this->model::find( $id );
                 if ( $entity instanceof Product && $entity->author === Auth::id() ) {   // prevent bulk-delete of another's items, although this shouldn't be a possible scenario
+                    // TODO: Delete associated product unit quantity record
                     $entity->delete();
                     $status[ 'success' ]++;
                 } else {
