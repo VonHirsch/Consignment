@@ -1,6 +1,11 @@
 <?php
 namespace Modules\Consignment\Crud;
 
+use App\Models\ProductCategory;
+use App\Models\ProductUnitQuantity;
+use App\Services\BarcodeService;
+use App\Services\CurrencyService;
+use App\Services\TaxService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Services\CrudService;
@@ -8,6 +13,7 @@ use App\Services\Users;
 use App\Services\CrudEntry;
 use App\Exceptions\NotAllowedException;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Modules\Consignment\ConsignmentModule;
 use TorMorten\Eventy\Facades\Events as Hook;
 use Exception;
@@ -107,6 +113,7 @@ class ProductCrud extends CrudService
      */
     public $fillable = [
         'name',
+        'tax_type',
         //'tax_value',
         //'unit_group',
         'description',
@@ -115,6 +122,8 @@ class ProductCrud extends CrudService
         'sku',
         'unit_group',
         'author',
+        'category_id',
+        'type'
     ];
 
     /**
@@ -203,6 +212,7 @@ class ProductCrud extends CrudService
                             'name'  =>  'name',
                             'label' =>  __( 'Name' ),
                             'value' =>  $entry->name ?? '',
+                            'validation' => 'required',
                         ], [
 //                            'type'  =>  'text',
 //                            'name'  =>  'tax_type',
@@ -244,11 +254,11 @@ class ProductCrud extends CrudService
 //                            'label' =>  __( 'Stock_management' ),
 //                            'value' =>  $entry->stock_management ?? '',
 //                        ], [
-                            'type'  =>  'hidden',
-                            'name'  =>  'barcode',
-                            'label' =>  __( 'Barcode' ),
-                            'value' =>  $entry->barcode ?? '',
-                        ], [
+//                            'type'  =>  'hidden',
+//                            'name'  =>  'barcode',
+//                            'label' =>  __( 'Barcode' ),
+//                            'value' =>  $entry->barcode ?? '',
+//                        ], [
 //                            'type'  =>  'text',
 //                            'name'  =>  'barcode_type',
 //                            'label' =>  __( 'Barcode_type' ),
@@ -260,6 +270,18 @@ class ProductCrud extends CrudService
 //                            'value' =>  $entry->sku ?? '',
 //                        ], [
                             'type'  =>  'text',
+                            'name'  =>  'sale_price_edit',
+                            'label' =>  __( 'Price' ),
+                            'value' =>  $entry->sale_price_edit ?? '',
+                            'validation' => 'required',
+                        ], [
+                            'type'  =>  'text',
+                            'name'  =>  'quantity',
+                            'label' =>  __( 'Quantity' ),
+                            'value' =>  $entry->quantity ?? '',
+                            'validation' => 'required',
+                        ], [
+                            'type'  =>  'textarea',
                             'name'  =>  'description',
                             'label' =>  __( 'Description' ),
                             'value' =>  $entry->description ?? '',
@@ -332,14 +354,30 @@ class ProductCrud extends CrudService
      */
     public function filterPostInputs( $inputs )
     {
-        # TODO - Calculate / hardcode
-        $inputs[ 'barcode' ] = '123';
-        $inputs[ 'sku' ] = 'abc';
+
+        /*
+         * Technically we should use the barcodeService to generate this
+         * but I'm not sure how to get a handle to that singleton atm,
+         * so just borrow the code for code128
+         */
+        $inputs[ 'barcode_type' ] = BarcodeService::TYPE_CODE128;
+        $inputs[ 'barcode' ] = Str::random(10);
+
+        // Hardcode category to Consignment
+        $category = ProductCategory::where( 'name', 'Consignment' )->first();
+        if (!isset($category)) {
+            throw new Exception( __( 'Please have the admin create a product category named Consignment' ) );
+        }
+
+        // Other Inputs
+        $inputs[ 'sku' ] = Str::slug( $category->name ) . '--' . Str::slug( $inputs[ 'name' ] ) . '--' . strtolower( Str::random(5) );
+        $inputs[ 'category_id' ] = $category->id;
         $inputs[ 'unit_group' ] = 1;    // hardcode to consignment
-
-
         $inputs[ 'author' ] = Auth::id();
-        $inputs[ 'barcode_type' ] = 'code128';
+        $inputs[ 'type' ] = Product::TYPE_MATERIALIZED;
+        $inputs[ 'tax_type'] = 'inclusive';
+
+        //ConsignmentModule::DumpVar($inputs);
 
         return $inputs;
     }
@@ -381,9 +419,95 @@ class ProductCrud extends CrudService
      */
     public function afterPost( $request, Product $entry )
     {
+        // Request is the form data, Entry is the Product being Modified
+
+        // Hardcode units for Consignment items
+        $request[ 'units' ] = array
+        (
+            'accurate_tracking' => 0,
+            'unit_group' => 1,
+            'selling_group' =>
+                array (
+                    0 =>
+                        array (
+                            'unit_id' => 1,
+                            'sale_price_edit' => $request[ 'sale_price_edit' ],
+                            'quantity' => $request[ 'quantity' ],
+                            'wholesale_price_edit' => $request[ 'sale_price_edit' ],
+                        ),
+                ),
+        );
+
+        $this->__computeUnitQuantities( $request,  $entry );
+
         return $request;
     }
 
+    // Borrowed from ProductService
+    private function __computeUnitQuantities( $fields, Product $product )
+    {
+        if ( $fields[ 'units' ] ) {
+
+            /**
+             * @var CurrencyService
+             */
+            $currencyService = app()->make( CurrencyService::class );
+
+            /**
+             * @var TaxService
+             */
+            $taxService = app()->make( TaxService::class );
+
+            foreach ( $fields[ 'units' ][ 'selling_group' ] as $group ) {
+                $unitQuantity = $this->getUnitQuantity(
+                    $product->id,
+                    $group[ 'unit_id' ]
+                );
+
+                if ( ! $unitQuantity instanceof ProductUnitQuantity ) {
+                    $unitQuantity = new ProductUnitQuantity;
+                    $unitQuantity->unit_id = $group[ 'unit_id' ];
+                    $unitQuantity->product_id = $product->id;
+                    $unitQuantity->quantity = 0;
+                }
+
+                /**
+                 * We don't need to save all the information
+                 * available on the group variable, that's why we define
+                 * explicitly how everything is saved here.
+                 */
+                $unitQuantity->sale_price = $currencyService->define( $group[ 'sale_price_edit' ] )->getRaw();
+                $unitQuantity->sale_price_edit = $currencyService->define( $group[ 'sale_price_edit' ] )->getRaw();
+                $unitQuantity->wholesale_price_edit = $currencyService->define( $group[ 'wholesale_price_edit' ] )->getRaw();
+                $unitQuantity->preview_url = $group[ 'preview_url' ] ?? '';
+                $unitQuantity->low_quantity = $group[ 'low_quantity' ] ?? 0;
+                $unitQuantity->stock_alert_enabled = $group[ 'stock_alert_enabled' ] ?? false;
+
+                /**
+                 * Let's compute the tax only
+                 * when the tax group is provided.
+                 */
+                $taxService->computeTax(
+                    $unitQuantity,
+                    $fields[ 'tax_group_id' ] ?? null,
+                    $fields[ 'tax_type' ] ?? null
+                );
+
+                /**
+                 * save custom barcode for the created unit quantity
+                 */
+                $unitQuantity->barcode = $product->barcode . '-' . $unitQuantity->id;
+                $unitQuantity->save();
+            }
+        }
+    }
+
+    public function getUnitQuantity( $product_id, $unit_id )
+    {
+        return ProductUnitQuantity::withProduct( $product_id )
+            ->withUnit( $unit_id )
+            ->first();
+    }
 
     /**
      * get
@@ -515,21 +639,21 @@ class ProductCrud extends CrudService
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
-//            'barcode'  =>  [
-//                'label'  =>  __( 'Barcode' ),
-//                '$direction'    =>  '',
-//                '$sort'         =>  false
-//            ],
-//            'barcode_type'  =>  [
-//                'label'  =>  __( 'Barcode_type' ),
-//                '$direction'    =>  '',
-//                '$sort'         =>  false
-//            ],
-//            'sku'  =>  [
-//                'label'  =>  __( 'Sku' ),
-//                '$direction'    =>  '',
-//                '$sort'         =>  false
-//            ],
+            'barcode'  =>  [
+                'label'  =>  __( 'Barcode' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false
+            ],
+            'barcode_type'  =>  [
+                'label'  =>  __( 'Barcode_type' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false
+            ],
+            'sku'  =>  [
+                'label'  =>  __( 'Sku' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false
+            ],
             'description'  =>  [
                 'label'  =>  __( 'Description' ),
                 '$direction'    =>  '',
@@ -540,11 +664,11 @@ class ProductCrud extends CrudService
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
-//            'category_id'  =>  [
-//                'label'  =>  __( 'Category_id' ),
-//                '$direction'    =>  '',
-//                '$sort'         =>  false
-//            ],
+            'category_id'  =>  [
+                'label'  =>  __( 'Category_id' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false
+            ],
 //            'parent_id'  =>  [
 //                'label'  =>  __( 'Parent_id' ),
 //                '$direction'    =>  '',

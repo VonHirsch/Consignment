@@ -40,6 +40,8 @@ class ConsignmentModule extends Module
 
     /**
      * check that the current user is the author of the product
+     * @param  int $author
+     * @throws NotAllowedException
      */
     public static function CheckAuthor( $author )
     {
@@ -47,5 +49,16 @@ class ConsignmentModule extends Module
             throw new NotAllowedException;
         }
     }
+
+    /**
+     * check that the current user is the author of the product
+     */
+    public static function DumpVar( $var )
+    {
+        Log::debug('>>> DumpVar <<<');
+        $var_dump = print_r($var, true);
+        Log::debug('var = ' . $var_dump);
+    }
+
 
 }
