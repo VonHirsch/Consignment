@@ -59,19 +59,24 @@ class ProductCrud extends CrudService
     ];
 
     /**
-     * Adding relation
+     * Adding relations
+     * I'm not sure the default example here is correct ...
      * Example : [ 'nexopos_users as user', 'user.id', '=', 'nexopos_orders.author' ]
+     *
      * @param array
      */
     public $relations   =  [
-            ];
+        [ 'nexopos_products_unit_quantities as unit', 'nexopos_products.id', '=', 'unit.product_id' ],
+        ];
 
     /**
      * all tabs mentionned on the tabs relations
      * are ignored on the parent model.
      */
     protected $tabsRelations    =   [
-        // 'tab_name'      =>      [ YourRelatedModel::class, 'localkey_on_relatedmodel', 'foreignkey_on_crud_model' ],
+        // Thought I could use this to access $entry->unitQuantity->quantity in getForm, but doesn't work
+        // This technique borrowed from CustomerCrud
+        //'unitQuantity' => [ ProductUnitQuantity::class, 'product_id', 'id' ],
     ];
 
     /**
@@ -89,7 +94,9 @@ class ProductCrud extends CrudService
      *      'user'  =>  [ 'username' ], // here the relation on the table nexopos_users is using "user" as an alias
      * ]
      */
-    public $pick        =   [];
+    public $pick = [
+        'unit' => [ 'quantity', 'sale_price_edit' ],
+    ];
 
     /**
      * Define where statement
@@ -492,15 +499,16 @@ class ProductCrud extends CrudService
     {
         if ( $fields[ 'units' ] ) {
 
+            // TODO: Find a way to get the global Currency and Tax Service singletons.
+            //  Other classes get it in their constructors, maybe we can get it passed to our module constructor somehow
             /**
              * @var CurrencyService
              */
-            $currencyService = app()->make( CurrencyService::class );
-
+            //$currencyService = app()->make( CurrencyService::class );
             /**
              * @var TaxService
              */
-            $taxService = app()->make( TaxService::class );
+            //$taxService = app()->make( TaxService::class );
 
             foreach ( $fields[ 'units' ][ 'selling_group' ] as $group ) {
                 $unitQuantity = $this->getUnitQuantity(
@@ -524,7 +532,6 @@ class ProductCrud extends CrudService
                  */
 
                 // The $currencyService we created isn't initialized properly, so we're losing precision in the prices
-                // TODO: Find a way to get the global CurrencyService singleton.  Other classes get it in their constructors, maybe we can get it passed to our module constructor somehow
                 /*
                 $unitQuantity->sale_price = $currencyService->define( $group[ 'sale_price_edit' ] )->getRaw();
                 $unitQuantity->sale_price_edit = $currencyService->define( $group[ 'sale_price_edit' ] )->getRaw();
@@ -660,6 +667,16 @@ class ProductCrud extends CrudService
                 'label'  =>  __( 'Name' ),
                 '$direction'    =>  '',
                 '$sort'         =>  false
+            ],
+            'unit_sale_price_edit' => [
+                'label' => __( 'Price' ),
+                '$direction' => '',
+                '$sort' => false,
+            ],
+            'unit_quantity' => [
+                'label' => __( 'Quantity' ),
+                '$direction' => '',
+                '$sort' => false,
             ],
 //            'tax_type'  =>  [
 //                'label'  =>  __( 'Tax_type' ),
