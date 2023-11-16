@@ -74,7 +74,8 @@ class ProductCrud extends CrudService
      * are ignored on the parent model.
      */
     protected $tabsRelations    =   [
-        // Thought I could use this to access $entry->unitQuantity->quantity in getForm, but doesn't work
+        // 'tab_name'      =>      [ YourRelatedModel::class, 'localkey_on_relatedmodel', 'foreignkey_on_crud_model' ],
+        // Thought I could use this to access $entry->unitQuantity->quantity in getForm, but doesn't work, perhaps it needs to be on a separate tab
         // This technique borrowed from CustomerCrud
         //'unitQuantity' => [ ProductUnitQuantity::class, 'product_id', 'id' ],
     ];
@@ -644,12 +645,21 @@ class ProductCrud extends CrudService
                 // This prevents someone from deleting another's item
                 ConsignmentModule::CheckAuthor($model->author);
 
-                // TODO: Delete associated product unit quantity record
+                $this->deleteProductAttachedRelation( $model );
 
             } else {
                 throw new NotAllowedException;
             }
         }
+    }
+
+    public function deleteProductAttachedRelation( $model )
+    {
+        //$model->sub_items()->delete();
+        //$model->galleries()->delete();
+        //$model->variations()->delete();
+        //$model->product_taxes()->delete();
+        $model->unit_quantities()->delete();
     }
 
     /**
@@ -728,11 +738,11 @@ class ProductCrud extends CrudService
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
-            'description'  =>  [
-                'label'  =>  __( 'Description' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'description'  =>  [
+//                'label'  =>  __( 'Description' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
             'barcode'  =>  [
                 'label'  =>  __( 'Barcode' ),
                 '$direction'    =>  '',
@@ -856,7 +866,7 @@ class ProductCrud extends CrudService
             foreach ( $request->input( 'entries' ) as $id ) {
                 $entity     =   $this->model::find( $id );
                 if ( $entity instanceof Product && $entity->author === Auth::id() ) {   // prevent bulk-delete of another's items, although this shouldn't be a possible scenario
-                    // TODO: Delete associated product unit quantity record
+                    $this->deleteProductAttachedRelation( $entity );
                     $entity->delete();
                     $status[ 'success' ]++;
                 } else {
