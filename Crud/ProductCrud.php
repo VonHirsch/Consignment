@@ -673,11 +673,11 @@ class ProductCrud extends CrudService
      */
     public function getColumns() {
         return [
-            'id'  =>  [
-                'label'  =>  __( 'Id' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'id'  =>  [
+//                'label'  =>  __( 'Id' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
             'name'  =>  [
                 'label'  =>  __( 'Name' ),
                 '$direction'    =>  '',

@@ -35,12 +35,7 @@ Route::prefix( 'dashboard' )->group( function() {
         Authenticate::class, // <= will be accessible only if the user is authenticated.
     ])->group( function() {
 
-        // Crud Test Routes
-        Route::get( '/Consignment/flights', [ ConsignmentCrudTest::class, 'flightList' ]);
-        Route::get( '/Consignment/flights/create', [ ConsignmentCrudTest::class, 'createFlight' ]);
-        Route::get( '/Consignment/flights/edit/{flight}', [ ConsignmentCrudTest::class, 'editFlight' ]);
-
-        // Consignment Product
+        Route::get( '/consignment/index', [ ConsignmentController::class, 'index' ]);
         Route::get( '/consignment/products', [ ConsignmentController::class, 'productList' ]);
         Route::get( '/consignment/products/create', [ ConsignmentController::class, 'createProduct' ]);
         Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);

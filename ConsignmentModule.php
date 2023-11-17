@@ -20,17 +20,12 @@ class ConsignmentModule extends Module
         // https://my.nexopos.com/en/documentation/filters/ns-dashboard-menus
         Hook::addFilter( 'ns-dashboard-menus', function( $menus ) {
             $menus    =   array_insert_after( $menus, 'orders', [
-//                'consignment'    =>    [
-//                    'label'   =>    __( 'Flights' ),
-//                    'permissions' => [ 'nexopos.consignment' ],
-//                    'icon'   => 'la-hand-holding-heart',
-//                    'href'    =>    url( 'dashboard/Consignment/flights' )
-//                ],
-                'products'    =>    [
+                'ConsignmentMain'    =>    [
                     'label'   =>    __( 'Consignment' ),
                     'permissions' => [ 'nexopos.consignment' ],
                     'icon'   => 'la-hand-holding-heart',
-                    'href'    =>    url( 'dashboard/consignment/products' )
+                    'href'    =>    url( 'dashboard/consignment/index' )
+                    //'href'    =>    url( 'dashboard/consignment/products' )
                 ]
             ]);
 

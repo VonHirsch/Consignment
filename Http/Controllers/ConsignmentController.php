@@ -54,6 +54,9 @@ class ConsignmentController extends DashboardController
     **/
     public function index()
     {
-        return $this->view( 'Consignment::index' );
+        return $this->view( 'Consignment::index', [
+            'title'   =>  __( 'Consignment' ),
+            'description' =>  __( 'Consignment Home Page' )
+        ]);
     }
 }
