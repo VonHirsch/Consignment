@@ -36,6 +36,7 @@ Route::prefix( 'dashboard' )->group( function() {
     ])->group( function() {
 
         Route::get( '/consignment/index', [ ConsignmentController::class, 'index' ]);
+        Route::get( '/consignment/faq', [ ConsignmentController::class, 'faq' ]);
         Route::get( '/consignment/products', [ ConsignmentController::class, 'productList' ]);
         Route::get( '/consignment/products/create', [ ConsignmentController::class, 'createProduct' ]);
         Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);

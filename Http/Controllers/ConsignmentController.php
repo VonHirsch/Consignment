@@ -59,4 +59,17 @@ class ConsignmentController extends DashboardController
             'description' =>  __( 'Consignment Home Page' )
         ]);
     }
+
+    /**
+     * FAQ Controller Page
+     * @return view
+     * @since 1.0
+     **/
+    public function faq()
+    {
+        return $this->view( 'Consignment::faq', [
+            'title'   =>  __( 'FAQ' ),
+            'description' =>  __( 'FAQ Page' )
+        ]);
+    }
 }

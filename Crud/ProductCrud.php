@@ -505,16 +505,17 @@ class ProductCrud extends CrudService
     {
         if ( $fields[ 'units' ] ) {
 
-            // TODO: Find a way to get the global Currency and Tax Service singletons.
+            // TODO: Find a way to get the global Currency singleton.
             //  Other classes get it in their constructors, maybe we can get it passed to our module constructor somehow
             /**
              * @var CurrencyService
              */
             //$currencyService = app()->make( CurrencyService::class );
+
             /**
              * @var TaxService
              */
-            //$taxService = app()->make( TaxService::class );
+            $taxService = app()->make( TaxService::class );
 
             foreach ( $fields[ 'units' ][ 'selling_group' ] as $group ) {
                 $unitQuantity = $this->getUnitQuantity(
@@ -551,18 +552,16 @@ class ProductCrud extends CrudService
                 $unitQuantity->low_quantity = $group[ 'low_quantity' ] ?? 0;
                 $unitQuantity->stock_alert_enabled = $group[ 'stock_alert_enabled' ] ?? false;
 
-                // TODO: Same thing for TaxService
+                // Tax service seems to be working as-is.  It will populate the with and without price fields
                 /**
                  * Let's compute the tax only
                  * when the tax group is provided.
                  */
-                /*
                 $taxService->computeTax(
                     $unitQuantity,
                     $fields[ 'tax_group_id' ] ?? null,
                     $fields[ 'tax_type' ] ?? null
                 );
-                */
 
                 /**
                  * save custom barcode for the created unit quantity
