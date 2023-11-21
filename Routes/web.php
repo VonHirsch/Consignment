@@ -3,7 +3,6 @@
 use App\Http\Middleware\Authenticate;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
-use Modules\Consignment\Http\Controllers\ConsignmentCrudTest;
 use Modules\Consignment\Http\Controllers\ConsignmentController;
 
 /*
@@ -40,6 +39,10 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::get( '/consignment/products', [ ConsignmentController::class, 'productList' ]);
         Route::get( '/consignment/products/create', [ ConsignmentController::class, 'createProduct' ]);
         Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);
+
+        Route::get( '/consignment/reports/sales', [ ConsignmentController::class, 'salesReport' ]); //->name( ns()->routeName( 'ns.dashboard.report.sales' ) );
+        Route::get( '/consignment/reports/consignors-statement', [ ConsignmentController::class, 'showConsignorsStatement' ]);  //->name( ns()->routeName( 'ns.dashboard.reports.customers-statement' ) );
+        Route::post( '/consignment/reports/consignors-statement/{customer}', [ ConsignmentController::class, 'getConsignorsStatement' ]);
 
     });
 });

@@ -6,6 +6,7 @@ use App\Models\ProductUnitQuantity;
 use App\Models\UnitGroup;
 use App\Services\BarcodeService;
 use App\Services\CurrencyService;
+use App\Services\ProductService;
 use App\Services\TaxService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -148,11 +149,18 @@ class ProductCrud extends CrudService
     protected $prependOptions     =   true;
 
     /**
+     * ProductService
+     * @var ProductService
+     */
+    protected ProductService $productService;
+
+    /**
      * Define Constructor
      * @param
      */
     public function __construct()
     {
+
         parent::__construct();
 
         Hook::addFilter( $this->namespace . '-crud-actions', [ $this, 'addActions' ], 10, 2 );
@@ -165,6 +173,7 @@ class ProductCrud extends CrudService
             ];
         }
 
+        $this->productService = app()->make( ProductService::class );
     }
 
     /**
@@ -390,6 +399,7 @@ class ProductCrud extends CrudService
          * Technically we should use the barcodeService to generate this
          * but I'm not sure how to get a handle to that singleton atm,
          * so just borrow the code for code128
+         * We could instantiate a BarcodeService, or get it from $self-ProductService
          */
         $inputs[ 'barcode_type' ] = BarcodeService::TYPE_CODE128;
         $inputs[ 'barcode' ] = Str::random(10);
@@ -497,6 +507,9 @@ class ProductCrud extends CrudService
         // This will create the associated product_unit_quantities record based on the hardcoded array above
         $this->__computeUnitQuantities( $request,  $entry );
 
+        // Generate Barcode images
+        $this->productService->generateProductBarcode( $entry );
+
         return $request;
     }
 
@@ -505,13 +518,11 @@ class ProductCrud extends CrudService
     {
         if ( $fields[ 'units' ] ) {
 
-            // TODO: Find a way to get the global Currency singleton.
-            //  Other classes get it in their constructors, maybe we can get it passed to our module constructor somehow
+            // TODO: Get the CurrencyService from $self->ProductService
             /**
              * @var CurrencyService
              */
             //$currencyService = app()->make( CurrencyService::class );
-
             /**
              * @var TaxService
              */

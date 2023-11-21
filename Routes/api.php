@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Middleware\Authenticate;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
+use Modules\Consignment\Http\Controllers\ConsignmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,13 +17,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
-
-// Crud takes care of these somehow ...
-// Create
-//Route::post( 'consignmentItems', [ ConsignmentProductsController::class, 'saveProduct' ]);
-// Edit
-//Route::put( 'consignmentItems/{identifier}', [ ConsignmentProductsController::class, 'updateProduct' ]);
-// Delete
-//Route::delete( 'consignmentItems/{identifier}', [ ConsignmentProductsController::class, 'deleteProduct' ]);
-
+// Routes in this file don't seem to be picked up by NexoPOS ...
