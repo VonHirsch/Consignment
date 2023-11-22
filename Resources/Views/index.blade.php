@@ -47,7 +47,7 @@ use Illuminate\Support\Facades\View;
                         </div>
                     </div>
                 </div>
-                <div onclick="location.href='reports/consignors-statement';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                <div onclick="location.href='reports/consignor-sales';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
                     <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-red-300 via-red-400 to-red-500 px-3 py-5">
                         <div class="flex flex-row md:flex-col flex-auto">
                             <div class="w-1/2 md:w-full flex md:flex-col md:items-start items-center justify-center">

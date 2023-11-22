@@ -7,12 +7,14 @@
 **/
 
 namespace Modules\Consignment\Http\Controllers;
+use App\Classes\Currency;
 use App\Models\Customer;
 use App\Models\CustomerAccountHistory;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use App\Http\Controllers\DashboardController;
@@ -87,58 +89,106 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
-    public function salesReport()
+    public function consignorSalesReport()
     {
-        return $this->view( 'Consignment::sales-report', [
+        return $this->view( 'Consignment::consignor-sales-report', [
             'title' => __( 'Sales Report' ),
             'description' => __( 'Provides an overview of Sales' ),
         ]);
     }
 
-    public function showConsignorsStatement()
-    {
-        return $this->view( 'Consignment::consignors-statement', [
-            'title' => __( 'Consignors Statement' ),
-            'description' => __( 'Display the complete consignor statement.' ),
-        ]);
-    }
-
-    public function getConsignorsStatement( Customer $customer, Request $request )
-    {
-        return $this->getConsignorStatement(
-            customer: $customer,
-            rangeStarts: $request->input( 'rangeStarts' ),
-            rangeEnds: $request->input( 'rangeEnds' )
-        );
-    }
-
     /**
-     * Will return the actual customer statement
+     * get sales based on a specific time range
      *
      * @return array
      */
-    public function getConsignorStatement( Customer $customer, $rangeStarts = null, $rangeEnds = null )
+    public function getConsignorSalesReport( Request $request )
     {
-        $rangeStarts = Carbon::parse( $rangeStarts )->toDateTimeString();
-        $rangeEnds = Carbon::parse( $rangeEnds )->toDateTimeString();
+        // In the case of the consignors sales report, we're only concerned with type 'products_report', and for the current user
+        // The start & end dates are hard-coded to +/- one month in the blade
+        return $this->getConsignorProductsReports( $request->input( 'startDate' ), $request->input( 'endDate' ), Auth::id() );
+    }
+
+    public function getConsignorProductsReports2( $start, $end, $user_id = null )
+    {
+
+        // get all products by $user_id
+        // get all orders with those products
+        // filter orders by PAID
+        // calculate summary
+        //
+        // map
+
+    }
+    public function getConsignorProductsReports( $start, $end, $user_id = null )
+    {
+
+        // get all payments in date range
+        $request = Order::paymentStatus( Order::PAYMENT_PAID )
+            ->from( $start )
+            ->to( $end );
+
+        // filter by author (cashier)
+        if ( ! empty( $user_id ) ) {
+            $request = $request->where( 'author', $user_id );
+        }
+
+        // orders with products ...
+        $orders = $request->with( 'products' )->get();
+
+        $summary = $this->getConsignorSalesSummary( $orders );
+
+        // map orders to products
+        $products = $orders->map( fn( $order ) => $order->products )->flatten();
+
+        // get unique products
+        $productsIds = $products->map( fn( $product ) => $product->product_id )->unique();
 
         return [
-            'purchases_amount' => $customer->purchases_amount,
-            'owed_amount' => $customer->owed_amount,
-            'account_amount' => $customer->account_amount,
-            'total_orders' => $customer->orders()->count(),
-            'credit_limit_amount' => $customer->credit_limit_amount,
-            'orders' => Order::where( 'customer_id', $customer->id )
-                ->paymentStatusIn([ Order::PAYMENT_PAID, Order::PAYMENT_UNPAID, Order::PAYMENT_REFUNDED, Order::PAYMENT_PARTIALLY ])
-                ->where( 'created_at', '>=', $rangeStarts )
-                ->where( 'created_at', '<=', $rangeEnds )
-                ->get(),
-            'wallet_transactions' => CustomerAccountHistory::where( 'customer_id', $customer->id )
-                ->where( 'created_at', '>=', $rangeStarts )
-                ->where( 'created_at', '<=', $rangeEnds )
-                ->get(),
+
+            // for each unique product
+            'result' => $productsIds->map( function ( $id ) use ( $products ) {
+
+                // unique product instance
+                $product = $products->where( 'product_id', $id )->first();
+
+                // collection of these products
+                $filteredProducts = $products->where( 'product_id', $id )->all();
+
+                // sum the filtered product fields
+                $summable = [ 'quantity', 'discount', 'wholesale_tax_value', 'sale_tax_value', 'tax_value', 'total_price_without_tax', 'total_price', 'total_price_with_tax', 'total_purchase_price' ];
+                foreach ( $summable as $key ) {
+                    $product->$key = collect( $filteredProducts )->sum( $key );
+                }
+
+                return $product;
+
+            })->values(),
+
+            'summary' => $summary,
+
         ];
     }
 
+    private function getConsignorSalesSummary( $orders )
+    {
+        $allSales = $orders->map( function ( $order ) {
+            return [
+                'subtotal' => $order->subtotal,
+                'sales_discounts' => $order->discount,
+                'sales_taxes' => $order->tax_value,
+                'shipping' => $order->shipping,
+                'total' => $order->total,
+            ];
+        });
+
+        return [
+            'sales_discounts' => Currency::define( $allSales->sum( 'sales_discounts' ) )->getRaw(),
+            'sales_taxes' => Currency::define( $allSales->sum( 'sales_taxes' ) )->getRaw(),
+            'subtotal' => Currency::define( $allSales->sum( 'subtotal' ) )->getRaw(),
+            'shipping' => Currency::define( $allSales->sum( 'shipping' ) )->getRaw(),
+            'total' => Currency::define( $allSales->sum( 'total' ) )->getRaw(),
+        ];
+    }
 
 }
