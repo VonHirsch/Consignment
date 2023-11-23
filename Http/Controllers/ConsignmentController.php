@@ -4,22 +4,28 @@
  * Consignment Controller
  * @since 1.0
  * @package modules/Consignment
-**/
+ **/
 
 namespace Modules\Consignment\Http\Controllers;
 use App\Classes\Currency;
+use App\Classes\Hook;
 use App\Models\Customer;
 use App\Models\CustomerAccountHistory;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use App\Http\Controllers\DashboardController;
 use App\Services\OrdersService;
 use App\Services\ReportService;
+use Exception;
 use Modules\Consignment\ConsignmentModule;
 use Modules\Consignment\Crud\ProductCrud;
 
@@ -67,7 +73,7 @@ class ConsignmentController extends DashboardController
      * Index Controller Page
      * @return view
      * @since 1.0
-    **/
+     **/
     public function index()
     {
         return $this->view( 'Consignment::index', [
@@ -109,51 +115,58 @@ class ConsignmentController extends DashboardController
         return $this->getConsignorProductsReports( $request->input( 'startDate' ), $request->input( 'endDate' ), Auth::id() );
     }
 
-    public function getConsignorProductsReports2( $start, $end, $user_id = null )
-    {
-
-        // get all products by $user_id
-        // get all orders with those products
-        // filter orders by PAID
-        // calculate summary
-        //
-        // map
-
-    }
     public function getConsignorProductsReports( $start, $end, $user_id = null )
     {
+        $orderTable = Hook::filter( 'ns-model-table', 'nexopos_orders' );
+        $productsTable = Hook::filter( 'ns-model-table', 'nexopos_products' );
+        $orderProductTable = Hook::filter( 'ns-model-table', 'nexopos_orders_products' );
 
-        // get all payments in date range
-        $request = Order::paymentStatus( Order::PAYMENT_PAID )
-            ->from( $start )
-            ->to( $end );
+        // Equivalent Query to Eloquent Query below
+        /*
+            SELECT * FROM
+                ns_nexopos_orders orders,
+                ns_nexopos_products products,
+                ns_nexopos_orders_products orders_products
+            WHERE
+                orders_products.order_id = orders.id
+                AND orders_products.product_id = products.id
+                AND products.author = 60
+                AND orders.payment_status = 'paid'
+         */
 
-        // filter by author (cashier)
-        if ( ! empty( $user_id ) ) {
-            $request = $request->where( 'author', $user_id );
-        }
+        $OrdersProducts = DB::table( $orderProductTable )
+            ->join( $orderTable, $orderTable . '.id', '=', $orderProductTable . '.order_id' )
+            ->join( $productsTable, $productsTable . '.id', '=', $orderProductTable . '.product_id' )
+            ->where( $productsTable . '.author', '=', Auth::id() )
+            ->where( $orderTable . '.payment_status', '=',Order::PAYMENT_PAID )->get();
 
-        // orders with products ...
-        $orders = $request->with( 'products' )->get();
+        //throw new Exception( $OrdersProducts->toSql() );
+        //throw new Exception('Order Count: ' . count($OrdersProducts) );
 
-        $summary = $this->getConsignorSalesSummary( $orders );
+        $summary = $this->getConsignorSalesSummary( $OrdersProducts );
 
-        // map orders to products
-        $products = $orders->map( fn( $order ) => $order->products )->flatten();
+        $productsIds = $OrdersProducts->map( fn( $orderProduct ) => $orderProduct->product_id )->unique();
 
-        // get unique products
-        $productsIds = $products->map( fn( $product ) => $product->product_id )->unique();
+        // Sample Map Code
+        /*
+        $productTable = $productsIds->map( function ( $id ) use ( $OrdersProducts ) {
+            $product = $OrdersProducts->where( 'product_id', $id )->first();
+            return $product->name;
+            }
+        );
+        ConsignmentModule::DumpVar($productTable);
+        */
 
         return [
 
             // for each unique product
-            'result' => $productsIds->map( function ( $id ) use ( $products ) {
+            'result' => $productsIds->map( function ( $id ) use ( $OrdersProducts ) {
 
                 // unique product instance
-                $product = $products->where( 'product_id', $id )->first();
+                $product = $OrdersProducts->where( 'product_id', $id )->first();
 
                 // collection of these products
-                $filteredProducts = $products->where( 'product_id', $id )->all();
+                $filteredProducts = $OrdersProducts->where( 'product_id', $id )->all();
 
                 // sum the filtered product fields
                 $summable = [ 'quantity', 'discount', 'wholesale_tax_value', 'sale_tax_value', 'tax_value', 'total_price_without_tax', 'total_price', 'total_price_with_tax', 'total_purchase_price' ];
@@ -168,25 +181,19 @@ class ConsignmentController extends DashboardController
             'summary' => $summary,
 
         ];
+
+
     }
 
     private function getConsignorSalesSummary( $orders )
     {
         $allSales = $orders->map( function ( $order ) {
             return [
-                'subtotal' => $order->subtotal,
-                'sales_discounts' => $order->discount,
-                'sales_taxes' => $order->tax_value,
-                'shipping' => $order->shipping,
-                'total' => $order->total,
+                'total' => $order->total_price,
             ];
         });
 
         return [
-            'sales_discounts' => Currency::define( $allSales->sum( 'sales_discounts' ) )->getRaw(),
-            'sales_taxes' => Currency::define( $allSales->sum( 'sales_taxes' ) )->getRaw(),
-            'subtotal' => Currency::define( $allSales->sum( 'subtotal' ) )->getRaw(),
-            'shipping' => Currency::define( $allSales->sum( 'shipping' ) )->getRaw(),
             'total' => Currency::define( $allSales->sum( 'total' ) )->getRaw(),
         ];
     }

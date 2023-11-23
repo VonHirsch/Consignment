@@ -317,6 +317,9 @@
                 },
 
                 computeTotal( collection, attribute ) {
+
+                    if (!collection) return 0;  // LBH Added while testing with null collection
+
                     if ( collection.length > 0 ) {
                         return collection.map( entry => parseFloat( entry[ attribute ] ) )
                             .reduce( ( b, a ) => b + a );
