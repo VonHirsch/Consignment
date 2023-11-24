@@ -6,6 +6,7 @@ use App\Events\AfterSuccessfulLoginEvent;
 use Illuminate\Support\ServiceProvider as CoreServiceProvider;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
+use Modules\Consignment\Crud\ConsignorSettingsCrud;
 use Modules\Consignment\Crud\FlightCrud;
 use Modules\Consignment\Crud\ProductCrud;
 use Modules\Consignment\Settings\ConsignmentSettings;
@@ -88,8 +89,8 @@ class ConsignmentServiceProvider extends CoreServiceProvider
         //Log::debug('ConsignmentDebug : ' . __FUNCTION__);
 
         switch( $identifier ) {
-            case 'consignment.flights': return FlightCrud::class;  // case 'crud namespace' as defined in the model class returned
             case 'consignment.products': return ProductCrud::class;
+            case 'consignment.consignor.settings': return ConsignorSettingsCrud::class;
             default: return $identifier; // required
         }
     }

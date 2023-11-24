@@ -34,24 +34,26 @@ Route::prefix( 'dashboard' )->group( function() {
         Authenticate::class, // <= will be accessible only if the user is authenticated.
     ])->group( function() {
 
+        // Static pages
         Route::get( '/consignment/index', [ ConsignmentController::class, 'index' ])->name( ns()->routeName( 'ns.consignment.index' ) );
         Route::get( '/consignment/faq', [ ConsignmentController::class, 'faq' ]);
-        Route::get( '/consignment/settings', [ ConsignmentController::class, 'showSettingsPage' ]);
+
+        // Products CRUD
         Route::get( '/consignment/products', [ ConsignmentController::class, 'productList' ]);
         Route::get( '/consignment/products/create', [ ConsignmentController::class, 'createProduct' ]);
         Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);
 
+        // ConsignorSettings CRUD
+        Route::get( '/consignment/settings', [ ConsignmentController::class, 'consignorSettingsList' ]);
+        Route::get( '/consignment/settings/create', [ ConsignmentController::class, 'createConsignorSettings' ]);
+        Route::get( '/consignment/settings/edit/{consignorsettings}', [ ConsignmentController::class, 'editConsignorSettings' ]);
+
+        // Reports
         Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);
         Route::post( '/consignment/reports/consignor-sales-report', [ ConsignmentController::class, 'getConsignorSalesReport' ]);
 
-
-
-        //Route::get( '/consignment/reports/sales', [ ConsignmentController::class, 'salesReport' ]); //->name( ns()->routeName( 'ns.dashboard.report.sales' ) )
+        // manage.options permissions only - these aren't used atm
+        Route::get( '/consignment/options', [ ConsignmentController::class, 'showModuleOptionsPage' ]);
 
     });
 });
-
-//// Bare Crud Test Routes
-//Route::get( '/dashboard/Consignment/flights', [ ConsignmentCrudTest::class, 'flightList' ]);
-//Route::get( '/dashboard/Consignment/flights/create', [ ConsignmentCrudTest::class, 'createFlight' ]);
-//Route::get( '/dashboard/Consignment/flights/edit/{flight}', [ ConsignmentCrudTest::class, 'editFlight' ]);

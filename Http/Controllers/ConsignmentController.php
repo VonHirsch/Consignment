@@ -27,6 +27,7 @@ use App\Services\OrdersService;
 use App\Services\ReportService;
 use Exception;
 use Modules\Consignment\ConsignmentModule;
+use Modules\Consignment\Crud\ConsignorSettingsCrud;
 use Modules\Consignment\Crud\ProductCrud;
 use Modules\Consignment\Settings\ConsignmentSettings;
 
@@ -40,11 +41,6 @@ class ConsignmentController extends DashboardController
     ) {
         parent::__construct();
     }
-
-//    public function __construct()
-//    {
-//        parent::__construct();
-//    }
 
     public function productList()
     {
@@ -68,6 +64,14 @@ class ConsignmentController extends DashboardController
         ConsignmentModule::CheckAuthor($product->author);
 
         return ProductCrud::form( $product );
+    }
+
+    public function consignorSettingsList()
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+        return ConsignorSettingsCrud::table([
+            'title' => __( 'My Consignment Settings' )
+        ]);
     }
 
     /**
@@ -98,7 +102,7 @@ class ConsignmentController extends DashboardController
 
     // I was going to use this for user settings, but need a crud for that
     // Leave this in case we need a module settings page down the line...
-    public function showSettingsPage()
+    public function showModuleOptionsPage()
     {
         ns()->restrict([ 'manage.options' ]);
         return ConsignmentSettings::renderForm();
