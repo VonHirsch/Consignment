@@ -34,25 +34,19 @@ Route::prefix( 'dashboard' )->group( function() {
         Authenticate::class, // <= will be accessible only if the user is authenticated.
     ])->group( function() {
 
-        Route::get( '/consignment/index', [ ConsignmentController::class, 'index' ]);
+        Route::get( '/consignment/index', [ ConsignmentController::class, 'index' ])->name( ns()->routeName( 'ns.consignment.index' ) );
         Route::get( '/consignment/faq', [ ConsignmentController::class, 'faq' ]);
+        Route::get( '/consignment/settings', [ ConsignmentController::class, 'showSettingsPage' ]);
         Route::get( '/consignment/products', [ ConsignmentController::class, 'productList' ]);
         Route::get( '/consignment/products/create', [ ConsignmentController::class, 'createProduct' ]);
         Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);
 
-        Route::get( '/consignment/reports/sales', [ ConsignmentController::class, 'salesReport' ]); //->name( ns()->routeName( 'ns.dashboard.report.sales' ) );
-
-        Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);  //->name( ns()->routeName( 'ns.dashboard.report.sales' ) );
+        Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);
         Route::post( '/consignment/reports/consignor-sales-report', [ ConsignmentController::class, 'getConsignorSalesReport' ]);
 
-        //Route::post( 'reports/sale-report', [ ReportsController::class, 'getSaleReport' ]);
-
-        // The route dashboard/consignment/reports/consignor-sales-report could not be found.
 
 
-        // First attempt at the report
-//        Route::get( '/consignment/reports/consignors-statement', [ ConsignmentController::class, 'showConsignorsStatement' ]);  //->name( ns()->routeName( 'ns.dashboard.reports.customers-statement' ) );
-//        Route::post( '/consignment/reports/consignors-statement/{customer}', [ ConsignmentController::class, 'getConsignorsStatement' ]);
+        //Route::get( '/consignment/reports/sales', [ ConsignmentController::class, 'salesReport' ]); //->name( ns()->routeName( 'ns.dashboard.report.sales' ) )
 
     });
 });

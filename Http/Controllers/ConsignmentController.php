@@ -28,6 +28,7 @@ use App\Services\ReportService;
 use Exception;
 use Modules\Consignment\ConsignmentModule;
 use Modules\Consignment\Crud\ProductCrud;
+use Modules\Consignment\Settings\ConsignmentSettings;
 
 // https://my.nexopos.com/en/documentation/crud-api/how-to-create-a-crud-component
 
@@ -95,6 +96,14 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
+    // I was going to use this for user settings, but need a crud for that
+    // Leave this in case we need a module settings page down the line...
+    public function showSettingsPage()
+    {
+        ns()->restrict([ 'manage.options' ]);
+        return ConsignmentSettings::renderForm();
+    }
+
     public function consignorSalesReport()
     {
         return $this->view( 'Consignment::consignor-sales-report', [
@@ -139,6 +148,10 @@ class ConsignmentController extends DashboardController
             ->join( $productsTable, $productsTable . '.id', '=', $orderProductTable . '.product_id' )
             ->where( $productsTable . '.author', '=', Auth::id() )
             ->where( $orderTable . '.payment_status', '=',Order::PAYMENT_PAID )->get();
+
+        // TODO: Refunds: if the payment_status is "partially_refunded" then query the ns_nexopos_orders_products_refunds table to see which product_id was refunded
+        // TODO: Refunds: as it is now, if an order is partially refunded, then no-one will see a payout on this report from that entire order (if there were multiple items on the order)
+        // TODO: Refunds: full order refunds should be fine
 
         //throw new Exception( $OrdersProducts->toSql() );
         //throw new Exception('Order Count: ' . count($OrdersProducts) );

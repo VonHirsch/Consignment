@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
 use Modules\Consignment\Crud\FlightCrud;
 use Modules\Consignment\Crud\ProductCrud;
+use Modules\Consignment\Settings\ConsignmentSettings;
 
 class ConsignmentServiceProvider extends CoreServiceProvider
 {
@@ -60,6 +61,14 @@ class ConsignmentServiceProvider extends CoreServiceProvider
             $gitHash = substr(file_get_contents($gitPathBranch),0, 7);
             return __( 'VCF ' . $gitHash);
         });
+
+        // settings
+        Hook::addFilter( 'ns.settings', function( $class, $identifier ) {
+            switch( $identifier ) {
+                case 'consignmentsettings': return new ConsignmentSettings; break;
+                default: return $class;
+            }
+        }, 10, 2 );
 
     }
 
