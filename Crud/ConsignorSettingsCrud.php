@@ -9,6 +9,7 @@ use App\Services\Users;
 use App\Services\CrudEntry;
 use App\Exceptions\NotAllowedException;
 use App\Models\User;
+use Modules\Consignment\ConsignmentModule;
 use Modules\Consignment\Models\ConsignorSettings;
 use TorMorten\Eventy\Facades\Events as Hook;
 use Exception;
@@ -375,6 +376,9 @@ class ConsignorSettingsCrud extends CrudService
      */
     public function beforePut( $request, $entry )
     {
+        // This prevents someone editing another's item
+        ConsignmentModule::CheckAuthor($entry->author);
+
         if ( $this->permissions[ 'update' ] !== false ) {
             ns()->restrict( $this->permissions[ 'update' ] );
         } else {
@@ -412,6 +416,10 @@ class ConsignorSettingsCrud extends CrudService
             **/
             if ( $this->permissions[ 'delete' ] !== false ) {
                 ns()->restrict( $this->permissions[ 'delete' ] );
+
+                // This prevents someone from deleting another's item
+                ConsignmentModule::CheckAuthor($model->author);
+
             } else {
                 throw new NotAllowedException;
             }
@@ -570,9 +578,16 @@ class ConsignorSettingsCrud extends CrudService
                 'failed'    =>  0
             ];
 
+            $notDefaultUser = false;
+
+            $user = app()->make( Users::class );
+            if (! $user->is([ 'user' ]) ) {
+                $notDefaultUser = true;
+            }
+
             foreach ( $request->input( 'entries' ) as $id ) {
                 $entity     =   $this->model::find( $id );
-                if ( $entity instanceof ConsignorSettings ) {
+                if ( $entity instanceof ConsignorSettings && ( $entity->author === Auth::id() || $notDefaultUser ) ) {   // prevent bulk-delete of another's items.  Non-default users can bulk-delete regardless of author id
                     $entity->delete();
                     $status[ 'success' ]++;
                 } else {

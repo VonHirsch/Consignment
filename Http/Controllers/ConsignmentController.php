@@ -116,6 +116,7 @@ class ConsignmentController extends DashboardController
 
         $user = app()->make( Users::class );
         if ($user->is([ 'admin' ]) ) {
+            // Admins will see the full crud listing
             return redirect( ns()->route( 'ns.consignorsettings.list' ) );
         } else {
 
