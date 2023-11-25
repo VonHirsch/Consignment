@@ -130,6 +130,18 @@ class ConsignmentController extends DashboardController
         }
     }
 
+    // ------------------------------------------------------
+    // Print labels / barcodes
+    // ------------------------------------------------------
+
+    public function printLabels()
+    {
+        return $this->view( 'Consignment::consignor-print-labels', [
+            'title' => __( 'Print Labels' ),
+            'description' => __( 'Customize and print products labels.' ),
+        ]);
+    }
+
     /**
      * Index Controller Page
      * @return view

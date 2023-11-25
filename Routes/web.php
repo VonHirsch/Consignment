@@ -48,7 +48,11 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::get( '/consignment/consignorsettings/create', [ ConsignmentController::class, 'createConsignorSettings' ]);
         Route::get( '/consignment/consignorsettings/edit/{consignorSettings}', [ ConsignmentController::class, 'editConsignorSettings' ]);
 
+        // Payment Prefs
         Route::get( '/consignment/consignor-edit', [ ConsignmentController::class, 'editPaymentPrefs' ]);
+
+        // Print Labels
+        Route::get( '/consignment/print-labels', [ ConsignmentController::class, 'printLabels' ]);
 
         // Reports
         Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);
