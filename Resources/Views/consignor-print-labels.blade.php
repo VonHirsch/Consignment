@@ -49,6 +49,7 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
 
         this.fields         =   this.validation.createFields([
             {
+                // Unit Quantity Dropdown
                 label: 'Unit',
                 type: 'select',
                 name: 'selectedUnitQuantity',
@@ -61,6 +62,7 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
                 }),
                 value: product.selectedUnitQuantity || product.unit_quantities[0]
             }, {
+                // Procurement Unit Quantity Dropdown
                 label: 'Unit',
                 type: 'select',
                 name: 'procurement_id',
@@ -74,6 +76,7 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
                 value: product.procurement_id
             },
             {
+                // Number of labels to print
                 label: 'Quantity',
                 type: 'number',
                 name: 'times',
@@ -151,7 +154,7 @@ Vue.component( 'label-printing', {
             if ( window.labelPrintPopup ) {
                 window.labelPrintPopup.close();
             }
-            // 
+            //
             window.labelPrintPopup     =   window.open( '', 'printPopup', windowFeatures );
             const styleOutput   =   Array.from( document.querySelectorAll( 'link' ) ).map( link => link.outerHTML ).join( "\n" )
             const paper         =   document.getElementById( 'label-printing-paper' );
@@ -173,6 +176,7 @@ Vue.component( 'label-printing', {
             ` );
             window.labelPrintPopup.document.writeln( paper.outerHTML );
         },
+        // fired when you first click on a product shown after searching
         async addProduct( product ) {
             try {
                 await this.editProduct( product );   
@@ -180,6 +184,7 @@ Vue.component( 'label-printing', {
                 this.resultSuggestions      =   [];
                 this.search_product         =   '';
 
+                //console.log(product);
                 this.products.push( product );
 
             } catch( exception ) {
@@ -187,6 +192,7 @@ Vue.component( 'label-printing', {
             }
         },
 
+        // fired from addProduct() - shows the product settings pop-up
         async editProduct( product ) {
             return new Promise( async ( resolve, reject ) => {
                 const result    =   ( await new Promise( ( resolve, reject ) => {
@@ -195,6 +201,9 @@ Vue.component( 'label-printing', {
 
                 product.selectedUnitQuantity    =   result.selectedUnitQuantity;
                 product.times                   =   result.times;
+
+                console.log(result.selectedUnitQuantity);
+                console.log(result.times);
 
                 this.$forceUpdate();
 
@@ -221,6 +230,32 @@ Vue.component( 'label-printing', {
                 console.log( reference );
                 this.itemsToPrint.push( ...reference );
             });
+        },
+        loadAll() {
+            // todo: post to a route '/dashboard/consignment/products/all` that retrieves all the consignors products
+            nsHttpClient.post( `/dashboard/consignment/products/all`, { search: this.search_product })
+                .subscribe( result => {
+                    this.allResults      =   result;
+                    result.forEach((product, index) => {
+                        console.log(product, index)
+
+                        product.selectedUnitQuantity    =   product.unit_quantities[0];
+                        product.times                   =   1;
+
+                        this.products.push( product );
+                    })
+
+                }, ( error ) => {
+                    nsSnackBar.error( error.message ).subscribe();
+                })
+
+            //this.$forceUpdate();
+
+            // "edit" the products by assigning units & qty (I think this determines the barcode image)
+            //      product.selectedUnitQuantity    =   result.selectedUnitQuantity;
+            //      product.times                   =   result.times;
+            // this.products.push( product );
+            // this.$forceUpdate();     // need to update screen?
         }
     },
     mounted() {
@@ -364,7 +399,8 @@ Vue.component( 'label-printing', {
                             </div>
                             <div class="border-t ns-box-footer p-2 flex justify-between">
                                 <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
-                                <ns-button @click="applySettings()" type="info">{{ __( 'Apply Settings' ) }}</ns-button>
+                                <ns-button @click="loadAll()" type="info">{{ __( 'Load All' ) }}</ns-button>
+                                <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
                             </div>
                         </div>
                         <div class="shadow ns-box mb-4">
