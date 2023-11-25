@@ -347,9 +347,10 @@ Vue.component( 'label-printing', {
                                 </div>
                                 <div class="flex justify-center flex-col py-1">
                                     <img :style="{ height: form.barcode_height + 'px' }" :src="'{{ ns()->asset( 'storage/products/barcodes' ) }}/' + item.selectedUnitQuantity.barcode + '.png'" :alt="item.selectedUnitQuantity.barcode">
-                                    <div class="flex justify-center w-full">
-                                        <span class="-mt-4 bg-white inline-block p-1">@{{ item.selectedUnitQuantity.barcode }}</span>
-                                    </div>
+                                    {{--this is the part that put the barcode text smack dab in the middle of the barcode itself--}}
+                                    {{--<div class="flex justify-center w-full">--}}
+                                        {{--<span class="-mt-4 bg-white inline-block p-1">@{{ item.selectedUnitQuantity.barcode }}</span>--}}
+                                    {{--</div>--}}
                                 </div>
                             </div>
                         </div>
