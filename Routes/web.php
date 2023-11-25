@@ -44,9 +44,9 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);
 
         // ConsignorSettings CRUD
-        Route::get( '/consignment/settings', [ ConsignmentController::class, 'consignorSettingsList' ]);
-        Route::get( '/consignment/settings/create', [ ConsignmentController::class, 'createConsignorSettings' ]);
-        Route::get( '/consignment/settings/edit/{consignorsettings}', [ ConsignmentController::class, 'editConsignorSettings' ]);
+        Route::get( '/consignment/consignorsettings', [ ConsignmentController::class, 'consignorSettingsList' ]);
+        Route::get( '/consignment/consignorsettings/create', [ ConsignmentController::class, 'createConsignorSettings' ]);
+        Route::get( '/consignment/consignorsettings/edit/{consignorSettings}', [ ConsignmentController::class, 'editConsignorSettings' ]);
 
         // Reports
         Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);

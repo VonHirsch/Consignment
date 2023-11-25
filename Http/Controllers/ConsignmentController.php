@@ -29,6 +29,7 @@ use Exception;
 use Modules\Consignment\ConsignmentModule;
 use Modules\Consignment\Crud\ConsignorSettingsCrud;
 use Modules\Consignment\Crud\ProductCrud;
+use Modules\Consignment\Models\ConsignorSettings;
 use Modules\Consignment\Settings\ConsignmentSettings;
 
 // https://my.nexopos.com/en/documentation/crud-api/how-to-create-a-crud-component
@@ -42,11 +43,16 @@ class ConsignmentController extends DashboardController
         parent::__construct();
     }
 
+    // ------------------------------------------------------
+    // Product Crud
+    // ------------------------------------------------------
+
     public function productList()
     {
         ns()->restrict([ 'nexopos.consignment' ]);
         return ProductCrud::table([
-            'title' => __( 'My Consignment Items' )
+            'title' => __( 'Items for Consignment' ),
+            'description' =>  __( 'Add edit & delete items' )
         ]);
     }
 
@@ -66,14 +72,34 @@ class ConsignmentController extends DashboardController
         return ProductCrud::form( $product );
     }
 
+    // ------------------------------------------------------
+    // ConsignorSettings Crud
+    // ------------------------------------------------------
+
     public function consignorSettingsList()
     {
         ns()->restrict([ 'nexopos.consignment' ]);
         return ConsignorSettingsCrud::table([
-            'title' => __( 'My Consignment Settings' )
+            'title' => __( 'Payment Settings' ),
+            'description' =>  __( 'Consignor Payment Settings' )
         ]);
     }
 
+    public function createConsignorSettings()
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+        return ConsignorSettingsCrud::form();
+    }
+
+    public function editConsignorSettings( ConsignorSettings $consignorSettings )
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
+        // This prevents someone from viewing another's item
+        ConsignmentModule::CheckAuthor($consignorSettings->author);
+
+        return ConsignorSettingsCrud::form( $consignorSettings );
+    }
     /**
      * Index Controller Page
      * @return view

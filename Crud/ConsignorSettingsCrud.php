@@ -43,10 +43,10 @@ class ConsignorSettingsCrud extends CrudService
      * @param array
      */
     protected $permissions  =   [
-        'create'    =>  true,
-        'read'      =>  true,
-        'update'    =>  true,
-        'delete'    =>  true,
+        'create'    =>  'nexopos.consignment',
+        'read'      =>  'nexopos.consignment',
+        'update'    =>  'nexopos.consignment',
+        'delete'    =>  'nexopos.consignment',
     ];
 
     /**
@@ -102,7 +102,19 @@ class ConsignorSettingsCrud extends CrudService
      * If few fields should only be filled
      * those should be listed here.
      */
-    public $fillable    =   "email,share_email,phone,share_phone,paypal_email,street,city,state,zip,payout_preference";
+    public $fillable = [
+        'email',
+        'share_email',
+        'phone',
+        'share_phone',
+        'paypal_email',
+        'street',
+        'city',
+        'state',
+        'zip',
+        'payout_preference',
+        'author',     // TODO: test that my fix in CrudService works for ConsignorSettingsCrud
+    ];
 
     /**
      * If fields should be ignored during saving
@@ -114,7 +126,7 @@ class ConsignorSettingsCrud extends CrudService
      * Determine if the options column should display
      * before the crud columns
      */
-    protected $prependOptions     =   false;
+    protected $prependOptions     =   true;
 
     /**
      * Define Constructor
@@ -125,6 +137,14 @@ class ConsignorSettingsCrud extends CrudService
         parent::__construct();
 
         Hook::addFilter( $this->namespace . '-crud-actions', [ $this, 'addActions' ], 10, 2 );
+
+        $user = app()->make( Users::class );
+        if ( $user->is([ 'user' ]) ) {
+            // Filter consignment item list by author (user.id) when the user is part of the default 'user' group
+            $this->listWhere = [
+                'author' => Auth::id()
+            ];
+        }
     }
 
     /**
@@ -174,21 +194,17 @@ class ConsignorSettingsCrud extends CrudService
                 'general'   =>  [
                     'label'     =>  __( 'General' ),
                     'fields'    =>  [
+//                        [
+//                            'type'  =>  'text',
+//                            'name'  =>  'author',
+//                            'label' =>  __( 'Author' ),
+//                            'value' =>  $entry->author ?? '',
+//                        ],
                         [
-                            'type'  =>  'text',
-                            'name'  =>  'author',
-                            'label' =>  __( 'Author' ),
-                            'value' =>  $entry->author ?? '',
-                        ], [
                             'type'  =>  'text',
                             'name'  =>  'city',
                             'label' =>  __( 'City' ),
                             'value' =>  $entry->city ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'created_at',
-                            'label' =>  __( 'Created_at' ),
-                            'value' =>  $entry->created_at ?? '',
                         ], [
                             'type'  =>  'text',
                             'name'  =>  'email',
@@ -244,11 +260,6 @@ class ConsignorSettingsCrud extends CrudService
                             'name'  =>  'street',
                             'label' =>  __( 'Street' ),
                             'value' =>  $entry->street ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'updated_at',
-                            'label' =>  __( 'Updated_at' ),
-                            'value' =>  $entry->updated_at ?? '',
                         ], [
                             'type'  =>  'text',
                             'name'  =>  'zip',
@@ -353,7 +364,7 @@ class ConsignorSettingsCrud extends CrudService
      * @return void
      */
     public function beforeDelete( $namespace, $id, $model ) {
-        if ( $namespace == 'consignment.settings' ) {
+        if ( $namespace == 'consignment.consignor.settings' ) {
             /**
              *  Perform an action before deleting an entry
              *  In case something wrong, this response can be returned
@@ -479,7 +490,7 @@ class ConsignorSettingsCrud extends CrudService
             'label'     =>  __( 'Delete' ),
             'namespace' =>  'delete',
             'type'      =>  'DELETE',
-            'url'       =>  ns()->url( '/api/nexopos/v4/crud/consignment.settings/' . $entry->id ),
+            'url'       =>  ns()->url( '/api/nexopos/v4/crud/consignment.consignor.settings/' . $entry->id ),
             'confirm'   =>  [
                 'message'  =>  __( 'Would you like to delete this ?' ),
             ]
@@ -542,8 +553,8 @@ class ConsignorSettingsCrud extends CrudService
             'list'      =>  ns()->url( 'dashboard/' . 'consignment/consignorsettings' ),
             'create'    =>  ns()->url( 'dashboard/' . 'consignment/consignorsettings/create' ),
             'edit'      =>  ns()->url( 'dashboard/' . 'consignment/consignorsettings/edit/' ),
-            'post'      =>  ns()->url( 'api/nexopos/v4/crud/' . 'consignment.settings' ),
-            'put'       =>  ns()->url( 'api/nexopos/v4/crud/' . 'consignment.settings/{id}' . '' ),
+            'post'      =>  ns()->url( 'api/nexopos/v4/crud/' . 'consignment.consignor.settings' ),
+            'put'       =>  ns()->url( 'api/nexopos/v4/crud/' . 'consignment.consignor.settings/{id}' . '' ),
         ];
     }
 

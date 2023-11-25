@@ -131,7 +131,7 @@ class ProductCrud extends CrudService
         'barcode_type',
         'sku',
         'unit_group',
-        'author',     // if you include author in fillable, there's logic in the CrudService to overwrite it with Auth::Id even when an edit is performed, which I've commented out for now
+        'author',     // if you include author in fillable, there's logic in the CrudService to overwrite it with Auth::Id, which I've modified to skip when the crud model is a Product
         'category_id',
         'type'
     ];
