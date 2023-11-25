@@ -14,6 +14,7 @@ use App\Models\CustomerAccountHistory;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Services\Users;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -81,7 +82,7 @@ class ConsignmentController extends DashboardController
         ns()->restrict([ 'nexopos.consignment' ]);
         return ConsignorSettingsCrud::table([
             'title' => __( 'Payment Settings' ),
-            'description' =>  __( 'Consignor Payment Settings' )
+            'description' =>  __( 'All Consignor Payment Settings' )
         ]);
     }
 
@@ -98,8 +99,36 @@ class ConsignmentController extends DashboardController
         // This prevents someone from viewing another's item
         ConsignmentModule::CheckAuthor($consignorSettings->author);
 
-        return ConsignorSettingsCrud::form( $consignorSettings );
+        return ConsignorSettingsCrud::form( $consignorSettings, [
+            'title' => __( 'Payment Settings' ),
+            'description' =>  __( 'Payment and Contact Preferences' ),
+        ]);
+
     }
+
+    // ------------------------------------------------------
+    // Access to the consignor crud for the current consignor
+    // ------------------------------------------------------
+
+    public function editPaymentPrefs()
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
+        $user = app()->make( Users::class );
+        if ($user->is([ 'admin' ]) ) {
+            return redirect( ns()->route( 'ns.consignorsettings.list' ) );
+        } else {
+
+            $consignorSettings = ConsignorSettings::where('author', Auth::id())->first();
+
+            return ConsignorSettingsCrud::form($consignorSettings, [
+                'title' => __('Payment Settings'),
+                'description' => __('Payment and Contact Preferences'),
+                'returnUrl' => ns()->route('ns.consignment.index'),
+            ]);
+        }
+    }
+
     /**
      * Index Controller Page
      * @return view

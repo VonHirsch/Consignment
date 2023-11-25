@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Consignment\Crud;
 
+use App\Services\Helper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Services\CrudService;
@@ -55,7 +56,9 @@ class ConsignorSettingsCrud extends CrudService
      * @param array
      */
     public $relations   =  [
-            ];
+        //[ 'nexopos_products_unit_quantities as unit', 'nexopos_products.id', '=', 'unit.product_id' ],
+        [ 'nexopos_users as user', 'consignor_settings.author', '=', 'user.id' ]
+    ];
 
     /**
      * all tabs mentionned on the tabs relations
@@ -80,7 +83,9 @@ class ConsignorSettingsCrud extends CrudService
      *      'user'  =>  [ 'username' ], // here the relation on the table nexopos_users is using "user" as an alias
      * ]
      */
-    public $pick        =   [];
+    public $pick        =   [
+        'user' => [ 'username', 'username' ],
+    ];
 
     /**
      * Define where statement
@@ -194,78 +199,96 @@ class ConsignorSettingsCrud extends CrudService
                 'general'   =>  [
                     'label'     =>  __( 'General' ),
                     'fields'    =>  [
-//                        [
-//                            'type'  =>  'text',
-//                            'name'  =>  'author',
-//                            'label' =>  __( 'Author' ),
-//                            'value' =>  $entry->author ?? '',
-//                        ],
+                        [
+                            'name'  =>  'payout_preference',
+                            'label' =>  __( 'Payout Preference' ),
+                            'value' =>  $entry->payout_preference ?? '',
+                            'type' => 'select',
+                            'options' => [
+                                [
+                                    'label' => __( 'Cash' ),
+                                    'value' => 'cash',
+                                ], [
+                                    'label' => __( 'Paypal' ),
+                                    'value' => 'paypal',
+                                ], [
+                                    'label' => __( 'Check' ),
+                                    'value' => 'check',
+                                ], [
+                                    'label' => __( 'Donate to VCF' ),
+                                    'value' => 'donation',
+                                ],
+                            ],
+                        ],
+                        [
+                            'type'  =>  'text',
+                            'name'  =>  'paypal_email',
+                            'label' =>  __( 'Paypal Email' ),
+                            'value' =>  $entry->paypal_email ?? '',
+                        ],
+                        [
+                            'type'  =>  'text',
+                            'name'  =>  'email',
+                            'label' =>  __( 'Email Address' ),
+                            'value' =>  $entry->email ?? '',
+                        ],
+                        [
+                            'type'  =>  'select',
+                            'name'  =>  'share_email',
+                            'label' =>  __( 'Share email with buyers?' ),
+                            'value' =>  $entry->share_email ?? '',
+                            'options' => Helper::kvToJsOptions([
+                                'yes' => __( 'Yes' ),
+                                'no' => __( 'No' ),
+                            ]),
+                        ],
+                        [
+                            'type'  =>  'text',
+                            'name'  =>  'phone',
+                            'label' =>  __( 'Phone Number' ),
+                            'value' =>  $entry->phone ?? '',
+                        ],
+                        [
+                            'type'  =>  'select',
+                            'name'  =>  'share_phone',
+                            'label' =>  __( 'Share phone # with buyers?' ),
+                            'value' =>  $entry->share_phone ?? '',
+                            'options' => Helper::kvToJsOptions([
+                                'yes' => __( 'Yes' ),
+                                'no' => __( 'No' ),
+                            ]),
+                        ],
+                        [
+                            'type'  =>  'text',
+                            'name'  =>  'street',
+                            'label' =>  __( 'Street Address' ),
+                            'value' =>  $entry->street ?? '',
+                        ],
                         [
                             'type'  =>  'text',
                             'name'  =>  'city',
                             'label' =>  __( 'City' ),
                             'value' =>  $entry->city ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'email',
-                            'label' =>  __( 'Email' ),
-                            'value' =>  $entry->email ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'id',
-                            'label' =>  __( 'Id' ),
-                            'value' =>  $entry->id ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'notes',
-                            'label' =>  __( 'Notes' ),
-                            'value' =>  $entry->notes ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'payout_preference',
-                            'label' =>  __( 'Payout_preference' ),
-                            'value' =>  $entry->payout_preference ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'paypal_email',
-                            'label' =>  __( 'Paypal_email' ),
-                            'value' =>  $entry->paypal_email ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'phone',
-                            'label' =>  __( 'Phone' ),
-                            'value' =>  $entry->phone ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'reference',
-                            'label' =>  __( 'Reference' ),
-                            'value' =>  $entry->reference ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'share_email',
-                            'label' =>  __( 'Share_email' ),
-                            'value' =>  $entry->share_email ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'share_phone',
-                            'label' =>  __( 'Share_phone' ),
-                            'value' =>  $entry->share_phone ?? '',
-                        ], [
+                        ],
+                        [
                             'type'  =>  'text',
                             'name'  =>  'state',
                             'label' =>  __( 'State' ),
                             'value' =>  $entry->state ?? '',
-                        ], [
-                            'type'  =>  'text',
-                            'name'  =>  'street',
-                            'label' =>  __( 'Street' ),
-                            'value' =>  $entry->street ?? '',
-                        ], [
+                        ],
+                        [
                             'type'  =>  'text',
                             'name'  =>  'zip',
                             'label' =>  __( 'Zip' ),
                             'value' =>  $entry->zip ?? '',
-                        ],                     ]
+                        ],
+                        [
+                            'type'  =>  'text',
+                            'name'  =>  'notes',
+                            'label' =>  __( 'Payment Notes' ),
+                            'value' =>  $entry->notes ?? '',
+                        ],
+                    ]
                 ]
             ]
         ];
@@ -388,86 +411,92 @@ class ConsignorSettingsCrud extends CrudService
      */
     public function getColumns() {
         return [
-            'author'  =>  [
-                'label'  =>  __( 'Author' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
+//            'author'  =>  [
+//                'label'  =>  __( 'Author' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+            'user_username' => [
+                'label' => __( 'User' ),
+                '$direction' => '',
+                '$sort' => false,
             ],
-            'city'  =>  [
-                'label'  =>  __( 'City' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'created_at'  =>  [
-                'label'  =>  __( 'Created_at' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'email'  =>  [
-                'label'  =>  __( 'Email' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'id'  =>  [
-                'label'  =>  __( 'Id' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'notes'  =>  [
-                'label'  =>  __( 'Notes' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'city'  =>  [
+//                'label'  =>  __( 'City' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'created_at'  =>  [
+//                'label'  =>  __( 'Created_at' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'id'  =>  [
+//                'label'  =>  __( 'Id' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'notes'  =>  [
+//                'label'  =>  __( 'Notes' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
             'payout_preference'  =>  [
-                'label'  =>  __( 'Payout_preference' ),
+                'label'  =>  __( 'Payout Preference' ),
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
-            'paypal_email'  =>  [
-                'label'  =>  __( 'Paypal_email' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+//            'paypal_email'  =>  [
+//                'label'  =>  __( 'Paypal_email' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
             'phone'  =>  [
                 'label'  =>  __( 'Phone' ),
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
-            'reference'  =>  [
-                'label'  =>  __( 'Reference' ),
+            'share_phone'  =>  [
+                'label'  =>  __( 'Share Phone?' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false
+            ],
+//            'reference'  =>  [
+//                'label'  =>  __( 'Reference' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+            'email'  =>  [
+                'label'  =>  __( 'Email' ),
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
             'share_email'  =>  [
-                'label'  =>  __( 'Share_email' ),
+                'label'  =>  __( 'Share Email?' ),
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
-            'share_phone'  =>  [
-                'label'  =>  __( 'Share_phone' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'state'  =>  [
-                'label'  =>  __( 'State' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'street'  =>  [
-                'label'  =>  __( 'Street' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'updated_at'  =>  [
-                'label'  =>  __( 'Updated_at' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
-            'zip'  =>  [
-                'label'  =>  __( 'Zip' ),
-                '$direction'    =>  '',
-                '$sort'         =>  false
-            ],
+
+//            'state'  =>  [
+//                'label'  =>  __( 'State' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'street'  =>  [
+//                'label'  =>  __( 'Street' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'updated_at'  =>  [
+//                'label'  =>  __( 'Updated_at' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
+//            'zip'  =>  [
+//                'label'  =>  __( 'Zip' ),
+//                '$direction'    =>  '',
+//                '$sort'         =>  false
+//            ],
                     ];
     }
 
