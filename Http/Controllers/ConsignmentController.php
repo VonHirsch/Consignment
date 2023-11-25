@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\View;
 use App\Http\Controllers\DashboardController;
 use App\Services\OrdersService;
 use App\Services\ReportService;
+use App\Services\ProductService;
 use Exception;
 use Modules\Consignment\ConsignmentModule;
 use Modules\Consignment\Crud\ConsignorSettingsCrud;
@@ -39,7 +40,8 @@ class ConsignmentController extends DashboardController
 {
     public function __construct(
         protected OrdersService $ordersService,
-        protected ReportService $reportService
+        protected ReportService $reportService,
+        protected ProductService $productService,
     ) {
         parent::__construct();
     }
@@ -136,10 +138,69 @@ class ConsignmentController extends DashboardController
 
     public function printLabels()
     {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
         return $this->view( 'Consignment::consignor-print-labels', [
             'title' => __( 'Print Labels' ),
             'description' => __( 'Customize and print products labels.' ),
         ]);
+    }
+
+    public function searchProduct( Request $request )
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
+        Log::debug('>>> searchProduct');
+
+        return $this->searchConsignorProducts(
+            search: $request->input( 'search' ),
+                arguments: (array) $request->input( 'arguments' )
+            );
+    }
+
+    public function searchConsignorProducts( $search, $limit = 5, $arguments = [] )
+    {
+        /**
+         * @var Builder $query
+         */
+        $query = Product::query()
+            ->searchable()
+            ->where('author', '=', Auth::id())
+            ->where( function ( $query ) use ( $search ) {
+                $query
+                    ->orWhere( 'name', 'LIKE', "%{$search}%" )
+                    ->orWhere( 'sku', 'LIKE', "%{$search}%" )
+                    ->orWhere( 'barcode', 'LIKE', "%{$search}%" );
+            })
+            ->with([
+                'unit_quantities.unit',
+                'tax_group.taxes',
+            ])
+            ->limit( $limit );
+
+        /**
+         * if custom arguments are provided
+         * we'll parse it and convert it into
+         * eloquent arguments
+         */
+        if ( ! empty( $arguments ) ) {
+            $eloquenize = new EloquenizeArrayService;
+            $eloquenize->parse( $query, $arguments );
+        }
+
+        return $query->get()
+            ->map( function ( $product ) {
+                $units = json_decode( $product->purchase_unit_ids );
+
+                if ( $units ) {
+                    $product->purchase_units = collect();
+                    collect( $units )->each( function ( $unitID ) use ( &$product ) {
+                        $product->purchase_units->push( Unit::find( $unitID ) );
+                    });
+                }
+
+                return $product;
+            });
     }
 
     /**

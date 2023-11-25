@@ -72,7 +72,8 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
                     }
                 }),
                 value: product.procurement_id
-            }, {
+            },
+            {
                 label: 'Quantity',
                 type: 'number',
                 name: 'times',
@@ -202,7 +203,8 @@ Vue.component( 'label-printing', {
         },
 
         searchProduct() {
-            nsHttpClient.post( `/api/nexopos/v4/products/search`, { search: this.search_product })
+            //nsHttpClient.post( `/api/nexopos/v4/products/search`, { search: this.search_product })
+            nsHttpClient.post( `/dashboard/consignment/products/search`, { search: this.search_product })
                 .subscribe( result => {
                     this.resultSuggestions      =   result;
                 }, ( error ) => {
