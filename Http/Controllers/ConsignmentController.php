@@ -166,8 +166,8 @@ class ConsignmentController extends DashboardController
     public function consignorSalesReport()
     {
         return $this->view( 'Consignment::consignor-sales-report', [
-            'title' => __( 'Sales Report' ),
-            'description' => __( 'Provides an overview of Sales' ),
+            'title' => __( 'My Sales' ),
+            'description' => __( 'Provides an overview of your Sales' ),
         ]);
     }
 

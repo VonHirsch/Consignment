@@ -45,14 +45,25 @@ use Illuminate\Support\Facades\View;
                 </div>
 
                 <div onclick="location.href='products';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-indigo-400 to-indigo-600 px-3 py-5">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-purple-400 to-purple-600 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
                             <h3 class="text-2xl font-black">
-                                My Items
+                                Print Labels
                             </h3>
                         </div>
                     </div>
                 </div>
+
+                <div onclick="location.href='products';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
+                        <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
+                            <h3 class="text-2xl font-black">
+                                Contact Sellers
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
 
         </div>
     </div>

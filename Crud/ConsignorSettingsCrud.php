@@ -202,8 +202,10 @@ class ConsignorSettingsCrud extends CrudService
                         [
                             'name'  =>  'payout_preference',
                             'label' =>  __( 'Payout Preference' ),
+                            'description' => __( 'Select a payout Preference' ),
                             'value' =>  $entry->payout_preference ?? '',
                             'type' => 'select',
+                            'validation' => 'required',
                             'options' => [
                                 [
                                     'label' => __( 'Cash' ),
@@ -225,17 +227,28 @@ class ConsignorSettingsCrud extends CrudService
                             'name'  =>  'paypal_email',
                             'label' =>  __( 'Paypal Email' ),
                             'value' =>  $entry->paypal_email ?? '',
+                            'description' => __( '^ Provide this if your payout preference is Paypal' ),
+//                            'validation' => $entry->email === 'Paypal' ? 'required' : '',
                         ],
                         [
                             'type'  =>  'text',
                             'name'  =>  'email',
                             'label' =>  __( 'Email Address' ),
+                            'description' => __( 'Best email to contact you during the event' ),
                             'value' =>  $entry->email ?? '',
                         ],
                         [
-                            'type'  =>  'select',
+                            'type'  =>  'text',
+                            'name'  =>  'phone',
+                            'label' =>  __( 'Phone Number' ),
+                            'description' => __( 'Best phone # to contact you during the event' ),
+                            'value' =>  $entry->phone ?? '',
+                        ],
+                        [
+                            'type'  =>  'switch',
                             'name'  =>  'share_email',
                             'label' =>  __( 'Share email with buyers?' ),
+                            'description' => __( 'Share email with potential buyers?' ),
                             'value' =>  $entry->share_email ?? '',
                             'options' => Helper::kvToJsOptions([
                                 'yes' => __( 'Yes' ),
@@ -243,15 +256,10 @@ class ConsignorSettingsCrud extends CrudService
                             ]),
                         ],
                         [
-                            'type'  =>  'text',
-                            'name'  =>  'phone',
-                            'label' =>  __( 'Phone Number' ),
-                            'value' =>  $entry->phone ?? '',
-                        ],
-                        [
-                            'type'  =>  'select',
+                            'type'  =>  'switch',
                             'name'  =>  'share_phone',
                             'label' =>  __( 'Share phone # with buyers?' ),
+                            'description' => __( 'Share phone # with potential buyers?' ),
                             'value' =>  $entry->share_phone ?? '',
                             'options' => Helper::kvToJsOptions([
                                 'yes' => __( 'Yes' ),
@@ -262,23 +270,27 @@ class ConsignorSettingsCrud extends CrudService
                             'type'  =>  'text',
                             'name'  =>  'street',
                             'label' =>  __( 'Street Address' ),
+                            'description' => __( 'If Payout by check, provide mailing address' ),
                             'value' =>  $entry->street ?? '',
                         ],
                         [
                             'type'  =>  'text',
                             'name'  =>  'city',
                             'label' =>  __( 'City' ),
+                            'description' => __( 'If Payout by check, provide mailing address' ),
                             'value' =>  $entry->city ?? '',
                         ],
                         [
                             'type'  =>  'text',
                             'name'  =>  'state',
                             'label' =>  __( 'State' ),
+                            'description' => __( 'If Payout by check, provide mailing address' ),
                             'value' =>  $entry->state ?? '',
                         ],
                         [
                             'type'  =>  'text',
                             'name'  =>  'zip',
+                            'description' => __( 'If Payout by check, provide mailing address' ),
                             'label' =>  __( 'Zip' ),
                             'value' =>  $entry->zip ?? '',
                         ],
@@ -286,6 +298,7 @@ class ConsignorSettingsCrud extends CrudService
                             'type'  =>  'text',
                             'name'  =>  'notes',
                             'label' =>  __( 'Payment Notes' ),
+                            'description' => __( 'Add any special instructions here' ),
                             'value' =>  $entry->notes ?? '',
                         ],
                     ]
