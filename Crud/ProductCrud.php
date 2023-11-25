@@ -188,10 +188,10 @@ class ProductCrud extends CrudService
             'list_description'      =>  __( 'Display all products.' ),
             'no_entry'              =>  __( 'No products has been registered' ),
             'create_new'            =>  __( 'Add a new product' ),
-            'create_title'          =>  __( 'Create a new product' ),
-            'create_description'    =>  __( 'Register a new product and save it.' ),
-            'edit_title'            =>  __( 'Edit product' ),
-            'edit_description'      =>  __( 'Modify  Product.' ),
+            'create_title'          =>  __( 'Create an Item' ),
+            'create_description'    =>  __( 'Create a consignment sale item' ),
+            'edit_title'            =>  __( 'Edit Item' ),
+            'edit_description'      =>  __( 'Edit a consignment sale item' ),
             'back_to_list'          =>  __( 'Return to Products' ),
         ];
     }

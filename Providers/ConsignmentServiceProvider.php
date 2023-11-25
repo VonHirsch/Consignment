@@ -39,13 +39,10 @@ class ConsignmentServiceProvider extends CoreServiceProvider
      */
     public function register()
     {
-
         //Log::debug('ConsignmentDebug : ' . __FUNCTION__);
 
         // Register our Crud Test (see function below)
         Hook::addFilter( 'ns-crud-resource', [ $this, 'registerCrud' ]);
-
-        // these don't seem to be working, possibly the hook is broken or too early?
 
         // customize page titles
         Hook::filter( 'ns-page-title', function( $pageTitle ) {;

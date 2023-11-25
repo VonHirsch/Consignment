@@ -52,8 +52,8 @@ class ConsignmentController extends DashboardController
     {
         ns()->restrict([ 'nexopos.consignment' ]);
         return ProductCrud::table([
-            'title' => __( 'Items for Consignment' ),
-            'description' =>  __( 'Add edit & delete items' )
+            'title' => __( 'My Items' ),
+            'description' =>  __( 'Add, edit and delete your consignment items' )
         ]);
     }
 

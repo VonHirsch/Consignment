@@ -21,7 +21,7 @@ class ConsignmentModule extends Module
         Hook::addFilter( 'ns-dashboard-menus', function( $menus ) {
             $menus    =   array_insert_after( $menus, 'orders', [
                 'ConsignmentMain'    =>    [
-                    'label'   =>    __( 'Consignment' ),
+                    'label'   =>    __( 'Consignment Home' ),
                     'permissions' => [ 'nexopos.consignment' ],
                     'icon'   => 'la-hand-holding-heart',
                     'href'    =>    url( 'dashboard/consignment/index' )
