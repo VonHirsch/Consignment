@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Dashboard\CustomersController;
+use App\Http\Controllers\Dashboard\ProductsController;
+use App\Http\Controllers\Dashboard\ReportsController;
 use App\Http\Middleware\Authenticate;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -56,8 +59,18 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::post( '/consignment/products/search', [ ConsignmentController::class, 'searchProducts' ]);
         Route::post( '/consignment/products/all', [ ConsignmentController::class, 'allProducts' ]);
 
+        // Contact Sellers
+        Route::get( '/consignment/contact-sellers', [ ConsignmentController::class, 'contactSellers' ]);
+
+        // Search Product by Barcode
+        Route::post( '/consignment/barcode/search', [ ConsignmentController::class, 'searchBarcodes' ])->name( ns()->routeName( 'ns.consignor.barcode.search' ) );
+
+        // Get consignor contact info via product id
+        Route::post( '/consignment/consignor-contact-info', [ ConsignmentController::class, 'getConsignorContactInfo' ]);
+
         // Possibly useful for contact seller...
         //Route::get( 'products/search/using-barcode/{product}', [ ProductsController::class, 'searchUsingArgument' ]);
+
 
         // Reports
         Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);

@@ -64,7 +64,7 @@ use Illuminate\Support\Facades\View;
                     </div>
                 </div>
 
-                <div onclick="location.href='products';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                <div onclick="location.href='contact-sellers';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
                     <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
                             <h3 class="text-2xl font-black">

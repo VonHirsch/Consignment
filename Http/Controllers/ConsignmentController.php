@@ -14,6 +14,7 @@ use App\Models\CustomerAccountHistory;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\ProductUnitQuantity;
 use App\Services\Users;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -146,11 +147,10 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
+    // TODO - Remove unneeded args, optimize
     public function searchProducts( Request $request )
     {
         ns()->restrict([ 'nexopos.consignment' ]);
-
-        Log::debug('>>> searchProduct');
 
         return $this->searchConsignorProducts(
             search: $request->input( 'search' ),
@@ -158,6 +158,7 @@ class ConsignmentController extends DashboardController
             );
     }
 
+    // TODO - Remove unneeded args, optimize
     public function searchConsignorProducts( $search, $limit = 5, $arguments = [] )
     {
         /**
@@ -203,11 +204,10 @@ class ConsignmentController extends DashboardController
             });
     }
 
+    // TODO - Remove unneeded args, optimize
     public function allProducts( Request $request )
     {
         ns()->restrict([ 'nexopos.consignment' ]);
-
-        Log::debug('>>> searchProduct');
 
         return $this->getAllConsignorProducts(
             search: $request->input( 'search' ),
@@ -215,6 +215,7 @@ class ConsignmentController extends DashboardController
                 );
     }
 
+    // TODO - Remove unneeded args, optimize
     public function getAllConsignorProducts( $search, $limit = 5, $arguments = [] )
     {
         /**
@@ -223,12 +224,6 @@ class ConsignmentController extends DashboardController
         $query = Product::query()
             ->searchable()
             ->where('author', '=', Auth::id())
-//            ->where( function ( $query ) use ( $search ) {
-//                $query
-//                    ->orWhere( 'name', 'LIKE', "%{$search}%" )
-//                    ->orWhere( 'sku', 'LIKE', "%{$search}%" )
-//                    ->orWhere( 'barcode', 'LIKE', "%{$search}%" );
-//            })
             ->with([
                 'unit_quantities.unit',
                 'tax_group.taxes',
@@ -260,6 +255,85 @@ class ConsignmentController extends DashboardController
             });
     }
 
+    // ------------------------------------------------------
+    // Contact Sellers
+    // ------------------------------------------------------
+
+    public function contactSellers()
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
+        return $this->view( 'Consignment::contact-sellers', [
+            'title' => __( 'Contact Sellers' ),
+            'description' => __( 'Enter item barcode to find out about a seller' ),
+        ]);
+    }
+
+    // ns-search.vue requires a collection of models (->get), it doesn't work with a single (->first)
+    public function searchBarcodes( Request $request )
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+        $reference = $request->input( 'search' );
+
+        // this requires them to put in the whole barcode, probably reduces lag as well
+        //$productUnitQuantity = ProductUnitQuantity::barcode( $reference )->with( 'unit' )->first();
+
+        $productUnitQuantity = ProductUnitQuantity::where( 'barcode', 'like', '%' . $reference . '%' )->first();
+        $products = null;
+
+        if ( $productUnitQuantity instanceof ProductUnitQuantity ) {
+            $products = Product::where( 'id', $productUnitQuantity->product_id )->get();
+        }
+
+        return $products;
+    }
+
+    public function searchCustomers( Request $request )
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
+        Log::debug('>>> searchCustomers');
+
+        $search = $request->input( 'search' );
+        $customers = Customer::with( 'billing' )
+            ->with( 'shipping' )
+            ->where( 'name', 'like', '%' . $search . '%' )
+            ->orWhere( 'email', 'like', '%' . $search . '%' )
+            ->orWhere( 'phone', 'like', '%' . $search . '%' )
+            ->get();
+
+        return $customers;
+    }
+
+    public function getConsignorContactInfo( Request $request )
+    {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
+        $author = $request->input( 'author' );
+        $consignorInfo = ConsignorSettings::where( 'author', $author )->first();
+
+        $emptyConsignorInfo = new ConsignorSettings;
+
+        if ($consignorInfo->share_email !== 'yes') {
+            $emptyConsignorInfo->email = 'Consignor did not opt in to share email';
+        } else {
+            $emptyConsignorInfo->email = $consignorInfo->email;
+        }
+
+        if ($consignorInfo->share_phone !== 'yes') {
+            $emptyConsignorInfo->phone = 'Consignor did not opt in to share phone';
+        } else {
+            $emptyConsignorInfo->phone = $consignorInfo->phone;
+        }
+
+        return $emptyConsignorInfo;
+    }
+
+
+    // ------------------------------------------------------
+    // "Static" Pages
+    // ------------------------------------------------------
+
     /**
      * Index Controller Page
      * @return view
@@ -267,6 +341,8 @@ class ConsignmentController extends DashboardController
      **/
     public function index()
     {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
         return $this->view( 'Consignment::index', [
             'title'   =>  __( 'Consignment' ),
             'description' =>  __( 'Consignment Home Page' )
@@ -280,11 +356,17 @@ class ConsignmentController extends DashboardController
      **/
     public function faq()
     {
+        ns()->restrict([ 'nexopos.consignment' ]);
+
         return $this->view( 'Consignment::faq', [
             'title'   =>  __( 'FAQ' ),
             'description' =>  __( 'FAQ Page' )
         ]);
     }
+
+    // ------------------------------------------------------
+    // Module Settings / Options (unused atm)
+    // ------------------------------------------------------
 
     // I was going to use this for user settings, but need a crud for that
     // Leave this in case we need a module settings page down the line...
@@ -294,8 +376,13 @@ class ConsignmentController extends DashboardController
         return ConsignmentSettings::renderForm();
     }
 
+    // ------------------------------------------------------
+    // Reports
+    // ------------------------------------------------------
+
     public function consignorSalesReport()
     {
+        ns()->restrict([ 'nexopos.consignment' ]);
         return $this->view( 'Consignment::consignor-sales-report', [
             'title' => __( 'My Sales' ),
             'description' => __( 'Provides an overview of your Sales' ),
@@ -309,6 +396,7 @@ class ConsignmentController extends DashboardController
      */
     public function getConsignorSalesReport( Request $request )
     {
+        ns()->restrict([ 'nexopos.consignment' ]);
         // In the case of the consignors sales report, we're only concerned with type 'products_report', and for the current user
         // The start & end dates are hard-coded to +/- one month in the blade
         return $this->getConsignorProductsReports( $request->input( 'startDate' ), $request->input( 'endDate' ), Auth::id() );
