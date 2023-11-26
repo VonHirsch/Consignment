@@ -265,7 +265,7 @@ class ConsignmentController extends DashboardController
 
         return $this->view( 'Consignment::contact-sellers', [
             'title' => __( 'Contact Sellers' ),
-            'description' => __( 'Enter item barcode to find out about a seller' ),
+            'description' => __( 'Enter item barcode to find contact info for a seller' ),
         ]);
     }
 
@@ -311,8 +311,12 @@ class ConsignmentController extends DashboardController
 
         $author = $request->input( 'author' );
         $consignorInfo = ConsignorSettings::where( 'author', $author )->first();
-
         $emptyConsignorInfo = new ConsignorSettings;
+
+        // if the consignor hasn't filled out their preferences
+        if ($consignorInfo === null) {
+            $consignorInfo = $emptyConsignorInfo;
+        }
 
         if ($consignorInfo->share_email !== 'yes') {
             $emptyConsignorInfo->email = 'Consignor did not opt in to share email';
