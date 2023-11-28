@@ -24,21 +24,21 @@ use Illuminate\Support\Facades\View;
                     </div>
                 </div>
 
-                <div onclick="location.href='consignor-edit';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-green-400 to-green-600 px-3 py-5">
+                <div onclick="location.href='contact-sellers';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
                             <h3 class="text-2xl font-black">
-                                Payment Prefs
+                                Contact Sellers
                             </h3>
                         </div>
                     </div>
                 </div>
 
-                <div onclick="location.href='reports/consignor-sales';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-red-300 via-red-400 to-red-500 px-3 py-5">
+                <div onclick="location.href='consignor-edit';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-green-400 to-green-600 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
                             <h3 class="text-2xl font-black">
-                                My Sales
+                                Payment Prefs
                             </h3>
                         </div>
                     </div>
@@ -64,16 +64,15 @@ use Illuminate\Support\Facades\View;
                     </div>
                 </div>
 
-                <div onclick="location.href='contact-sellers';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
+                <div onclick="location.href='reports/consignor-sales';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-red-300 via-red-400 to-red-500 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
                             <h3 class="text-2xl font-black">
-                                Contact Sellers
+                                My Sales
                             </h3>
                         </div>
                     </div>
                 </div>
-
 
         </div>
     </div>

@@ -19,15 +19,29 @@ class ConsignmentModule extends Module
         // Dashboard Menus
         // https://my.nexopos.com/en/documentation/filters/ns-dashboard-menus
         Hook::addFilter( 'ns-dashboard-menus', function( $menus ) {
-            $menus    =   array_insert_after( $menus, 'orders', [
-                'ConsignmentMain'    =>    [
-                    'label'   =>    __( 'Consignment Home' ),
-                    'permissions' => [ 'nexopos.consignment' ],
-                    'icon'   => 'la-hand-holding-heart',
-                    'href'    =>    url( 'dashboard/consignment/index' )
-                    //'href'    =>    url( 'dashboard/consignment/products' )
+            $menus    =   array_insert_after( $menus, 'orders',
+                [
+                    'ConsignmentMain'    =>    [
+                        'label'   =>    __( 'Consignment Home' ),
+                        'permissions' => [ 'nexopos.consignment' ],
+                        'icon'   => 'la-hand-holding-usd',
+                        'href'    =>    url( 'dashboard/consignment/index' )
+                    ],
+                    'ConsignmentLabels'    =>    [
+                        'label'   =>    __( 'Consignment Labels' ),
+                        'permissions' => [ 'nexopos.consignment.print-labels' ],
+                        'icon'   => 'la-tags',
+                        'href'    =>    url( 'dashboard/consignment/labels' )
+                    ],
+                    'ConsignmentPayouts'    =>    [
+                        'label'   =>    __( 'Consignment Payouts' ),
+                        'permissions' => [ 'nexopos.consignment.manage-payouts' ],
+                        'icon'   => 'la-comment-dollar',
+                        'href'    =>    url( 'dashboard/consignment/payouts' )
+                    ],
+
                 ]
-            ]);
+            );
 
             return $menus; // <= do not forget
         });

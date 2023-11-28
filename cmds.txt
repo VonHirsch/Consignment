@@ -1,19 +1,21 @@
+**RUN THESE FROM NexoPOS Root
 
-#List NexoPOS Console Commands
+#List NexoPOS Console Commands 
 
-php artisan list
+	php artisan list
 
 #List only Module Commands
 
-php artisan list modules
+	php artisan list modules
+
+#Create a Module Migration
+
+	php artisan modules:migration Consignment
 
 #Migrate a Module
 
-php artisan modules:migrate Consignment
+	php artisan modules:migrate Consignment
 
-#Forget Migrations
+#Forget Module Migrations
 
-php artisan migrate:forget Consignment
-
-
-
+	php artisan migrate:forget Consignment
