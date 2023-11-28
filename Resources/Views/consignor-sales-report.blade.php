@@ -100,6 +100,7 @@
                             <thead class="text-primary">
                             <tr>
                                 <th class="border p-2 text-left">{{ __( 'Products' ) }}</th>
+                                <th width="150" class="border p-2">{{ __( 'Price' ) }}</th>
                                 <th width="150" class="border p-2">{{ __( 'Quantity' ) }}</th>
                                 {{--<th width="150" class="border p-2">{{ __( 'Discounts' ) }}</th>--}}
                                 {{--<th width="150" class="border p-2">{{ __( 'Taxes' ) }}</th>--}}
@@ -109,6 +110,7 @@
                             <tbody class="text-primary">
                             <tr v-for="product of result" :key="product.id">
                                 <td class="p-2 border">@{{ product.name }}</td>
+                                <td class="p-2 border text-right">@{{ product.unit_price | currency }}</td>
                                 <td class="p-2 border text-right">@{{ product.quantity }}</td>
                                 {{--<td class="p-2 border text-right">@{{ product.discount | currency }}</td>--}}
                                 {{--<td class="p-2 border text-right">@{{ product.tax_value | currency }}</td>--}}
@@ -118,7 +120,9 @@
                             <tfoot class="text-primary font-semibold">
                             <tr>
                                 <td class="p-2 border text-primary"></td>
-                                <td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'quantity' ) }}</td>
+                                <td class="p-2 border text-primary"></td>
+                                <td class="p-2 border text-primary"></td>
+                                {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'quantity' ) }}</td>--}}
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'discount' ) | currency }}</td>--}}
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'tax_value' ) | currency }}</td>--}}
                                 <td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'total_price' ) | currency }}</td>
