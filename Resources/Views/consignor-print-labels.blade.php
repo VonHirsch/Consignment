@@ -179,7 +179,13 @@ Vue.component( 'label-printing', {
         // fired when you first click on a product shown after searching
         async addProduct( product ) {
             try {
-                await this.editProduct( product );   
+                // Skip the pop-up to streamline this for consignors
+                //await this.editProduct( product );
+
+                product.selectedUnitQuantity    =   product.unit_quantities[0];
+                product.times                   =   1;
+
+                this.$forceUpdate();
 
                 this.resultSuggestions      =   [];
                 this.search_product         =   '';
@@ -195,15 +201,12 @@ Vue.component( 'label-printing', {
         // fired from addProduct() - shows the product settings pop-up
         async editProduct( product ) {
             return new Promise( async ( resolve, reject ) => {
+
                 const result    =   ( await new Promise( ( resolve, reject ) => {
                     Popup.show( nsLabelsProductSettings, { product, resolve, reject });
                 }) );
-
                 product.selectedUnitQuantity    =   result.selectedUnitQuantity;
                 product.times                   =   result.times;
-
-                console.log(result.selectedUnitQuantity);
-                console.log(result.times);
 
                 this.$forceUpdate();
 
@@ -212,7 +215,6 @@ Vue.component( 'label-printing', {
         },
 
         searchProduct() {
-            //nsHttpClient.post( `/api/nexopos/v4/products/search`, { search: this.search_product })
             nsHttpClient.post( `/dashboard/consignment/products/search`, { search: this.search_product })
                 .subscribe( result => {
                     this.resultSuggestions      =   result;
@@ -232,7 +234,6 @@ Vue.component( 'label-printing', {
             });
         },
         loadAll() {
-            // todo: post to a route '/dashboard/consignment/products/all` that retrieves all the consignors products
             nsHttpClient.post( `/dashboard/consignment/products/all`, { search: this.search_product })
                 .subscribe( result => {
                     this.allResults      =   result;
@@ -249,13 +250,6 @@ Vue.component( 'label-printing', {
                     nsSnackBar.error( error.message ).subscribe();
                 })
 
-            //this.$forceUpdate();
-
-            // "edit" the products by assigning units & qty (I think this determines the barcode image)
-            //      product.selectedUnitQuantity    =   result.selectedUnitQuantity;
-            //      product.times                   =   result.times;
-            // this.products.push( product );
-            // this.$forceUpdate();     // need to update screen?
         }
     },
     mounted() {
@@ -362,6 +356,11 @@ Vue.component( 'label-printing', {
                             <div class="header border-b ns-box-header p-2">
                                 <h3 class="font-semibold">{{ __( 'My Items' ) }}</h3>
                             </div>
+                            <div class="border-t ns-box-footer p-2 flex justify-between">
+                                <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
+                                <ns-button @click="loadAll()" type="info">{{ __( 'Load All' ) }}</ns-button>
+                                <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
+                            </div>
                             <div class="body p-2">
                                 <div class="input-group info rounded border-2">
                                     <input v-model="search_product" class=" w-full p-2" placeholder="{{ __( 'Search Items...' ) }}"/>
@@ -398,11 +397,7 @@ Vue.component( 'label-printing', {
                                     </ul>
                                 </div>
                             </div>
-                            <div class="border-t ns-box-footer p-2 flex justify-between">
-                                <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
-                                <ns-button @click="loadAll()" type="info">{{ __( 'Load All' ) }}</ns-button>
-                                <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
-                            </div>
+
                         </div>
                         <div class="shadow ns-box mb-4">
                             <div class="header border-b ns-box-header p-2">

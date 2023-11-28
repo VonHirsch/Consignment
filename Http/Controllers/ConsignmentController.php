@@ -184,10 +184,10 @@ class ConsignmentController extends DashboardController
          * we'll parse it and convert it into
          * eloquent arguments
          */
-        if ( ! empty( $arguments ) ) {
-            $eloquenize = new EloquenizeArrayService;
-            $eloquenize->parse( $query, $arguments );
-        }
+//        if ( ! empty( $arguments ) ) {
+//            $eloquenize = new EloquenizeArrayService;
+//            $eloquenize->parse( $query, $arguments );
+//        }
 
         return $query->get()
             ->map( function ( $product ) {
@@ -216,7 +216,7 @@ class ConsignmentController extends DashboardController
     }
 
     // TODO - Remove unneeded args, optimize
-    public function getAllConsignorProducts( $search, $limit = 5, $arguments = [] )
+    public function getAllConsignorProducts( $search, $limit = 100, $arguments = [] )
     {
         /**
          * @var Builder $query
@@ -235,10 +235,10 @@ class ConsignmentController extends DashboardController
          * we'll parse it and convert it into
          * eloquent arguments
          */
-        if ( ! empty( $arguments ) ) {
-            $eloquenize = new EloquenizeArrayService;
-            $eloquenize->parse( $query, $arguments );
-        }
+//        if ( ! empty( $arguments ) ) {
+//            $eloquenize = new EloquenizeArrayService;
+//            $eloquenize->parse( $query, $arguments );
+//        }
 
         return $query->get()
             ->map( function ( $product ) {
