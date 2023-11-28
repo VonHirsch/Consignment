@@ -56,7 +56,7 @@ class ConsignmentController extends DashboardController
         ns()->restrict([ 'nexopos.consignment' ]);
         return ProductCrud::table([
             'title' => __( 'My Items' ),
-            'description' =>  __( 'Add, edit and delete your consignment items' )
+            'description' =>  __( 'To add an item, click the round plus button below' )
         ]);
     }
 
@@ -484,7 +484,7 @@ class ConsignmentController extends DashboardController
     {
         $allSales = $orders->map( function ( $order ) {
             return [
-                'total' => $order->total_price,
+                'total' => ($order->total_price * .85),     // TODO: calculate this from module settings
             ];
         });
 

@@ -82,7 +82,7 @@
                                             {{--<td class="p-2 border text-right border-success-primary">@{{ summary.shipping | currency }}</td>--}}
                                         {{--</tr>--}}
                                         <tr class="">
-                                            <td width="200" class="font-semibold p-2 border text-left bg-success-secondary border-success-secondary text-white">{{ __( 'Total' ) }}</td>
+                                            <td width="200" class="font-semibold p-2 border text-left bg-success-secondary border-success-secondary text-white">{{ __( 'Estimated Payout' ) }}</td>
                                             <td class="p-2 border text-right border-success-primary">@{{ summary.total | currency }}</td>
                                         </tr>
                                         </tbody>
@@ -104,7 +104,7 @@
                                 <th width="150" class="border p-2">{{ __( 'Quantity' ) }}</th>
                                 {{--<th width="150" class="border p-2">{{ __( 'Discounts' ) }}</th>--}}
                                 {{--<th width="150" class="border p-2">{{ __( 'Taxes' ) }}</th>--}}
-                                <th width="150" class="border p-2">{{ __( 'Total' ) }}</th>
+                                {{--<th width="150" class="border p-2">{{ __( 'Total' ) }}</th>--}}
                             </tr>
                             </thead>
                             <tbody class="text-primary">
@@ -114,20 +114,20 @@
                                 <td class="p-2 border text-right">@{{ product.quantity }}</td>
                                 {{--<td class="p-2 border text-right">@{{ product.discount | currency }}</td>--}}
                                 {{--<td class="p-2 border text-right">@{{ product.tax_value | currency }}</td>--}}
-                                <td class="p-2 border text-right">@{{ product.total_price | currency }}</td>
+                                {{--<td class="p-2 border text-right">@{{ product.total_price | currency }}</td>--}}
                             </tr>
                             </tbody>
-                            <tfoot class="text-primary font-semibold">
-                            <tr>
-                                <td class="p-2 border text-primary"></td>
-                                <td class="p-2 border text-primary"></td>
-                                <td class="p-2 border text-primary"></td>
+                            {{--<tfoot class="text-primary font-semibold">--}}
+                            {{--<tr>--}}
+                                {{--<td class="p-2 border text-primary"></td>--}}
+                                {{--<td class="p-2 border text-primary"></td>--}}
+                                {{--<td class="p-2 border text-primary"></td>--}}
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'quantity' ) }}</td>--}}
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'discount' ) | currency }}</td>--}}
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'tax_value' ) | currency }}</td>--}}
-                                <td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'total_price' ) | currency }}</td>
-                            </tr>
-                            </tfoot>
+                                {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'total_price' ) | currency }}</td>--}}
+                            {{--</tr>--}}
+                            {{--</tfoot>--}}
                         </table>
                     </div>
                 </div>
