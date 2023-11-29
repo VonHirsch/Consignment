@@ -160,20 +160,17 @@ class ProductCrud extends CrudService
      */
     public function __construct()
     {
-
         parent::__construct();
-
         Hook::addFilter( $this->namespace . '-crud-actions', [ $this, 'addActions' ], 10, 2 );
-
-        $user = app()->make( Users::class );
-        if ( $user->is([ 'user' ]) ) {
-            // Filter consignment item list by author (user.id) when the user is part of the default 'user' group
-            $this->listWhere = [
-                'nexopos_products.author' => Auth::id()
-            ];
-        }
-
         $this->productService = app()->make( ProductService::class );
+    }
+
+    // Filter items by author when passed with query parameters by the controller
+    public function hook( $query ): void
+    {
+        if ( ! empty( request()->query( 'author' ) ) ) {
+            $query->where( 'author', request()->query( 'author' ) );
+        }
     }
 
     /**
@@ -862,6 +859,8 @@ class ProductCrud extends CrudService
          * and supervisor.
          */
 
+        $isAdmin = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]);
+
         if ( $request->input( 'action' ) == 'delete_selected' ) {
 
             /**
@@ -878,16 +877,9 @@ class ProductCrud extends CrudService
                 'failed'    =>  0
             ];
 
-            $notDefaultUser = false;
-
-            $user = app()->make( Users::class );
-            if (! $user->is([ 'user' ]) ) {
-                $notDefaultUser = true;
-            }
-
             foreach ( $request->input( 'entries' ) as $id ) {
                 $entity     =   $this->model::find( $id );
-                if ( $entity instanceof Product && ( $entity->author === Auth::id() || $notDefaultUser ) ) {   // prevent bulk-delete of another's items.  Non-default users can bulk-delete regardless of author id
+                if ( $entity instanceof Product && ( $entity->author === Auth::id() || $isAdmin ) ) {   // prevent bulk-delete of another's items.  admin users can bulk-delete regardless of author id
                     $this->deleteProductAttachedRelation( $entity );
                     $entity->delete();
                     $status[ 'success' ]++;

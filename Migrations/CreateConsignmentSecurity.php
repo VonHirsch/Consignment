@@ -22,8 +22,41 @@ class CreateConsignmentSecurity extends Migration
     public function up()
     {
 
+        /*
+
+        Consignment Roles & Permissions.  This script will also setup the desired default security.
+
+        Default Security Settings:
+            The nexopos 'admin' has all capabilities.
+            The consignment admin has all capabilities except for payout.
+            The consignment printer role can only print labels.  This is intended for a 'self-service' type print station at the event.
+            The consignment payout role has access manage payouts and consignment admin.
+
+        PERMISSIONS
+
+        nexopos.consignment                             // General user permission
+        nexopos.consignment.print-labels				// Consignment label printer permission
+        nexopos.consignment.manage-payouts				// Consignment payout permission
+        nexopos.consignment.admin-features				// Consignment admin permission
+
+        ROLES
+
+        nexopos.consignment.administrator               // Consignment admin role - all admin functions
+        nexopos.consignment.printer                     // Consignment printer    - can only print labels
+        nexopos.consignment.payout                      // Consignment payout     - only role that can process payments
+
+        TO IMPLEMENT SECURITY, USE PERMISSIONS:
+
+            In Controller:
+                ns()->restrict([ 'nexopos.consignment.payout' ]);                       // sends user to access denied page
+
+            In Logic:
+                $isAdmin = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]);   // returns boolean
+
+        */
+
         // -----------------------------
-        // Add Permissions
+        // Create Permissions
         // -----------------------------
 
         // General consignment user permission
@@ -50,6 +83,18 @@ class CreateConsignmentSecurity extends Migration
             $permission->save();
         }
 
+        // Consignment admin permission
+        $namespace = 'nexopos.consignment.admin-features';
+        $permission = Permission::namespace( $namespace );
+
+        if ( ! $permission instanceof Permission ) {
+            $permission = Permission::firstOrNew([ 'namespace' => $namespace ]);
+            $permission->name = __( 'Consignment Administration' );
+            $permission->namespace = $namespace;
+            $permission->description = __( 'Allow user access to consignment administration.' );
+            $permission->save();
+        }
+
         // Consignment payout permission
         $namespace = 'nexopos.consignment.manage-payouts';
         $permission = Permission::namespace( $namespace );
@@ -63,7 +108,7 @@ class CreateConsignmentSecurity extends Migration
         }
 
         // -----------------------------
-        // Add Roles
+        // Create Roles
         // -----------------------------
 
         /**
@@ -110,14 +155,16 @@ class CreateConsignmentSecurity extends Migration
 
         // -----------------------------
         // Add Permissions to Roles
+        //  This is where the default security mappings are set
         // -----------------------------
 
         // General consignment user permission
         $namespace = 'nexopos.consignment';
         $permission = Permission::namespace( $namespace );
         Role::namespace( 'admin' )->addPermissions( $permission );
-        Role::namespace( 'nexopos.consignment.administrator' )->addPermissions( $permission );
         Role::namespace( 'user' )->addPermissions( $permission );
+        Role::namespace( 'nexopos.consignment.administrator' )->addPermissions( $permission );
+        Role::namespace( 'nexopos.consignment.payout' )->addPermissions( $permission );
 
         // Consignment label printer permission
         $namespace = 'nexopos.consignment.print-labels';
@@ -125,11 +172,19 @@ class CreateConsignmentSecurity extends Migration
         Role::namespace( 'admin' )->addPermissions( $permission );
         Role::namespace( 'nexopos.consignment.administrator' )->addPermissions( $permission );
         Role::namespace( 'nexopos.consignment.printer' )->addPermissions( $permission );
+        Role::namespace( 'nexopos.consignment.payout' )->addPermissions( $permission );
 
         // Consignment payout permission
         $namespace = 'nexopos.consignment.manage-payouts';
         $permission = Permission::namespace( $namespace );
         Role::namespace( 'admin' )->addPermissions( $permission );
+        Role::namespace( 'nexopos.consignment.payout' )->addPermissions( $permission );
+
+        // Consignment admin permission
+        $namespace = 'nexopos.consignment.admin-features';
+        $permission = Permission::namespace( $namespace );
+        Role::namespace( 'admin' )->addPermissions( $permission );
+        Role::namespace( 'nexopos.consignment.administrator' )->addPermissions( $permission );
         Role::namespace( 'nexopos.consignment.payout' )->addPermissions( $permission );
 
     }

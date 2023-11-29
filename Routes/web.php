@@ -37,12 +37,16 @@ Route::prefix( 'dashboard' )->group( function() {
         Authenticate::class, // <= will be accessible only if the user is authenticated.
     ])->group( function() {
 
-        // Static pages
+        // Indexes / Static pages
         Route::get( '/consignment/index', [ ConsignmentController::class, 'index' ])->name( ns()->routeName( 'ns.consignment.index' ) );
+        Route::get( '/consignment/index-labels', [ ConsignmentController::class, 'indexLabels' ])->name( ns()->routeName( 'ns.consignment.index-labels' ) );
+        Route::get( '/consignment/index-admin', [ ConsignmentController::class, 'indexAdmin' ])->name( ns()->routeName( 'ns.consignment.index-admin' ) );
+        Route::get( '/consignment/index-payouts', [ ConsignmentController::class, 'indexPayouts' ])->name( ns()->routeName( 'ns.consignment.index-payouts' ) );
         Route::get( '/consignment/faq', [ ConsignmentController::class, 'faq' ]);
 
         // Products CRUD
         Route::get( '/consignment/products', [ ConsignmentController::class, 'productList' ]);
+        Route::get( '/consignment/products-all', [ ConsignmentController::class, 'productListAll' ]);
         Route::get( '/consignment/products/create', [ ConsignmentController::class, 'createProduct' ]);
         Route::get( '/consignment/products/edit/{product}', [ ConsignmentController::class, 'editProduct' ]);
 
@@ -67,10 +71,6 @@ Route::prefix( 'dashboard' )->group( function() {
 
         // Get consignor contact info via product id
         Route::post( '/consignment/consignor-contact-info', [ ConsignmentController::class, 'getConsignorContactInfo' ]);
-
-        // Possibly useful for contact seller...
-        //Route::get( 'products/search/using-barcode/{product}', [ ProductsController::class, 'searchUsingArgument' ]);
-
 
         // Reports
         Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);

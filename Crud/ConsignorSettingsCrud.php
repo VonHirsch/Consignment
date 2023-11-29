@@ -315,6 +315,7 @@ class ConsignorSettingsCrud extends CrudService
      */
     public function filterPostInputs( $inputs )
     {
+        $inputs[ 'author' ] = Auth::id();   // Set Auth:id on create only
         return $inputs;
     }
 

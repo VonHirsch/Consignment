@@ -4,7 +4,6 @@ namespace Modules\Consignment;
 use App\Classes\Hook;
 use App\Services\Module;
 use App\Exceptions\NotAllowedException;
-use App\Services\Users;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,10 +13,6 @@ class ConsignmentModule extends Module
     {
         parent::__construct( __FILE__ );
 
-        //Log::debug('ConsignmentDebug : ' . __FUNCTION__);
-
-        // Dashboard Menus
-        // https://my.nexopos.com/en/documentation/filters/ns-dashboard-menus
         Hook::addFilter( 'ns-dashboard-menus', function( $menus ) {
             $menus    =   array_insert_after( $menus, 'orders',
                 [
@@ -31,15 +26,20 @@ class ConsignmentModule extends Module
                         'label'   =>    __( 'Consignment Labels' ),
                         'permissions' => [ 'nexopos.consignment.print-labels' ],
                         'icon'   => 'la-tags',
-                        'href'    =>    url( 'dashboard/consignment/labels' )
+                        'href'    =>    url( 'dashboard/consignment/index-labels' )
+                    ],
+                    'ConsignmentAdmin'    =>    [
+                        'label'   =>    __( 'Consignment Admin' ),
+                        'permissions' => [ 'nexopos.consignment.admin-features' ],
+                        'icon'   => 'la-tools',
+                        'href'    =>    url( 'dashboard/consignment/index-admin' )
                     ],
                     'ConsignmentPayouts'    =>    [
                         'label'   =>    __( 'Consignment Payouts' ),
                         'permissions' => [ 'nexopos.consignment.manage-payouts' ],
                         'icon'   => 'la-comment-dollar',
-                        'href'    =>    url( 'dashboard/consignment/payouts' )
+                        'href'    =>    url( 'dashboard/consignment/index-payouts' )
                     ],
-
                 ]
             );
 
@@ -50,16 +50,15 @@ class ConsignmentModule extends Module
 
     /**
      * check that the current user is the author of the product
+     * Consignment admins bypass this check
      * @param  int $author
      * @throws NotAllowedException
      */
     public static function CheckAuthor( $author )
     {
-        $user = app()->make( Users::class );
-        if (! $user->is([ 'user' ]) ) {
-            // Any non-vanilla user can CRUD consignment items they haven't authored
-            return;
-        }
+        $isAdmin = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]);
+
+        if ($isAdmin) return;
 
         if ( $author !== Auth::id() ) {
             throw new NotAllowedException;
@@ -67,7 +66,7 @@ class ConsignmentModule extends Module
     }
 
     /**
-     * check that the current user is the author of the product
+     * debug
      */
     public static function DumpVar( $var )
     {

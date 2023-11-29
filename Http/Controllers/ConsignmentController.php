@@ -51,12 +51,26 @@ class ConsignmentController extends DashboardController
     // Product Crud
     // ------------------------------------------------------
 
+    // List only products the user authored
     public function productList()
     {
         ns()->restrict([ 'nexopos.consignment' ]);
         return ProductCrud::table([
             'title' => __( 'My Items' ),
-            'description' =>  __( 'To add an item, click the round plus button below' )
+            'description' =>  __( 'To add an item, click the round plus button below' ),
+            'queryParams' => [
+                'author' => Auth::id(),
+            ],
+        ]);
+    }
+
+    // List all products
+    public function productListAll()
+    {
+        ns()->restrict([ 'nexopos.consignment.admin-features' ]);
+        return ProductCrud::table([
+            'title' => __( 'All Items' ),
+            'description' =>  __( 'All consignor items' ),
         ]);
     }
 
@@ -82,7 +96,8 @@ class ConsignmentController extends DashboardController
 
     public function consignorSettingsList()
     {
-        ns()->restrict([ 'nexopos.consignment' ]);
+        ns()->restrict([ 'nexopos.consignment.admin-features' ]);
+
         return ConsignorSettingsCrud::table([
             'title' => __( 'Payment Settings' ),
             'description' =>  __( 'All Consignor Payment Settings' )
@@ -99,11 +114,11 @@ class ConsignmentController extends DashboardController
     {
         ns()->restrict([ 'nexopos.consignment' ]);
 
-        // This prevents someone from viewing another's item
+        // This prevents someone from viewing another's settings
         ConsignmentModule::CheckAuthor($consignorSettings->author);
 
         return ConsignorSettingsCrud::form( $consignorSettings, [
-            'title' => __( 'Payment Settings' ),
+            'title' => __( 'Edit Payment Settings' ),
             'description' =>  __( 'Payment and Contact Preferences' ),
         ]);
 
@@ -117,21 +132,40 @@ class ConsignmentController extends DashboardController
     {
         ns()->restrict([ 'nexopos.consignment' ]);
 
-        $user = app()->make( Users::class );
-        if ($user->is([ 'admin' ]) ) {
-            // Admins will see the full crud listing
-            return redirect( ns()->route( 'ns.consignorsettings.list' ) );
-        } else {
+        $consignorSettings = ConsignorSettings::where('author', Auth::id())->first();
 
-            $consignorSettings = ConsignorSettings::where('author', Auth::id())->first();
-
-            return ConsignorSettingsCrud::form($consignorSettings, [
-                'title' => __('Payment Settings'),
-                'description' => __('Payment and Contact Preferences'),
-                'returnUrl' => ns()->route('ns.consignment.index'),
-            ]);
-        }
+        return ConsignorSettingsCrud::form($consignorSettings, [
+            'title' => __('Payment Settings'),
+            'description' => __('Payment and Contact Preferences'),
+            'returnUrl' => ns()->route('ns.consignment.index'),
+        ]);
     }
+
+//
+//    public function editAllPaymentPrefs()
+//    {
+//        ns()->restrict([ 'nexopos.consignment' ]);
+//
+//
+//        if (ConsignmentModule::IsConsignmentAdmin()) {
+//            return redirect( ns()->route( 'ns.consignorsettings.list' ) );
+//        }
+//
+//        $user = app()->make( Users::class );
+//        if ($user->is([ 'admin' ]) ) {
+//            // Admins will see the full crud listing
+//            return redirect( ns()->route( 'ns.consignorsettings.list' ) );
+//        } else {
+//
+//            $consignorSettings = ConsignorSettings::where('author', Auth::id())->first();
+//
+//            return ConsignorSettingsCrud::form($consignorSettings, [
+//                'title' => __('Payment Settings'),
+//                'description' => __('Payment and Contact Preferences'),
+//                'returnUrl' => ns()->route('ns.consignment.index'),
+//            ]);
+//        }
+//    }
 
     // ------------------------------------------------------
     // Print labels / barcodes
@@ -333,7 +367,6 @@ class ConsignmentController extends DashboardController
         return $emptyConsignorInfo;
     }
 
-
     // ------------------------------------------------------
     // "Static" Pages
     // ------------------------------------------------------
@@ -350,6 +383,51 @@ class ConsignmentController extends DashboardController
         return $this->view( 'Consignment::index', [
             'title'   =>  __( 'Consignment' ),
             'description' =>  __( 'Consignment Home Page' )
+        ]);
+    }
+
+    /**
+     * Label Index Controller Page
+     * @return view
+     * @since 1.0
+     **/
+    public function indexLabels()
+    {
+        ns()->restrict([ 'nexopos.consignment.print-labels' ]);
+
+        return $this->view( 'Consignment::index-labels', [
+            'title'   =>  __( 'Print Labels' ),
+            'description' =>  __( 'Label Printing Home Page' )
+        ]);
+    }
+
+    /**
+     * Admin Index Controller Page
+     * @return view
+     * @since 1.0
+     **/
+    public function indexAdmin()
+    {
+        ns()->restrict([ 'nexopos.consignment.admin-features' ]);
+
+        return $this->view( 'Consignment::index-admin', [
+            'title'   =>  __( 'Consignment Administration' ),
+            'description' =>  __( 'Consignment Admin Home Page' )
+        ]);
+    }
+
+    /**
+     * Payout Index Controller Page
+     * @return view
+     * @since 1.0
+     **/
+    public function indexPayouts()
+    {
+        ns()->restrict([ 'nexopos.consignment.manage-payouts' ]);
+
+        return $this->view( 'Consignment::index-payouts', [
+            'title'   =>  __( 'Consignment Payouts' ),
+            'description' =>  __( 'Manage Payouts' )
         ]);
     }
 
