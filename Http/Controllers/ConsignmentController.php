@@ -181,7 +181,28 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
-    // TODO - Remove unneeded args, optimize
+    public function printLabelsBySeller()
+    {
+        ns()->restrict([ 'nexopos.consignment.admin-features' ]);
+
+        return $this->view( 'Consignment::print-labels-by-seller', [
+            'title' => __( 'Print Labels By Seller' ),
+            'description' => __( 'Customize and print products labels.' ),
+        ]);
+    }
+
+    public function printLabelsByItem()
+    {
+        ns()->restrict([ 'nexopos.consignment.admin-features' ]);
+
+        return $this->view( 'Consignment::print-labels-by-item', [
+            'title' => __( 'Print Labels By Item' ),
+            'description' => __( 'Customize and print products labels.' ),
+        ]);
+    }
+
+
+// TODO - Remove unneeded args, optimize
     public function searchProducts( Request $request )
     {
         ns()->restrict([ 'nexopos.consignment' ]);

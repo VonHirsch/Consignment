@@ -63,6 +63,10 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::post( '/consignment/products/search', [ ConsignmentController::class, 'searchProducts' ]);
         Route::post( '/consignment/products/all', [ ConsignmentController::class, 'allProducts' ]);
 
+        // Admin Print Labels
+        Route::get( '/consignment/print-labels-by-seller', [ ConsignmentController::class, 'printLabelsBySeller' ]);
+        Route::get( '/consignment/print-labels-by-item', [ ConsignmentController::class, 'printLabelsByItem' ]);
+
         // Contact Sellers
         Route::get( '/consignment/contact-sellers', [ ConsignmentController::class, 'contactSellers' ]);
 

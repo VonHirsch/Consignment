@@ -34,6 +34,26 @@ use Illuminate\Support\Facades\View;
                     </div>
                 </div>
 
+                <div onclick="location.href='print-labels-by-seller';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-info-secondary to-info-tertiary px-3 py-5">
+                        <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
+                            <h3 class="text-2xl font-black">
+                                Labels by Seller
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="location.href='print-labels-by-item';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
+                        <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
+                            <h3 class="text-2xl font-black">
+                                Lables by Item
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
         </div>
     </div>
 @endsection
