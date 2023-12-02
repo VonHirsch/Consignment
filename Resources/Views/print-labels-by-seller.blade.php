@@ -177,7 +177,6 @@ Vue.component( 'label-printing', {
             try {
                 this.seller_user_id = seller.id;
                 this.resultSuggestions      =   [];
-                this.products = [];
                 this.loadAll();
             } catch( exception ) {
                 console.log( exception );
@@ -205,6 +204,7 @@ Vue.component( 'label-printing', {
             });
         },
         loadAll() {
+            this.products = [];
             nsHttpClient.post( `/dashboard/consignment/products/all`, { search: this.seller_user_id })
                 .subscribe( result => {
                     this.allResults      =   result;

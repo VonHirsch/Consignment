@@ -234,6 +234,7 @@ Vue.component( 'label-printing', {
             });
         },
         loadAll() {
+            this.products = [];
             nsHttpClient.post( `/dashboard/consignment/products/all`, { search: this.search_product })
                 .subscribe( result => {
                     this.allResults      =   result;
