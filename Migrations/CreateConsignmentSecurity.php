@@ -118,7 +118,7 @@ class CreateConsignmentSecurity extends Migration
         $consignmentAdmin = Role::firstOrNew([ 'namespace' => $namespace ]);
         $consignmentAdmin->name = __( 'Consignment Administrator' );
         $consignmentAdmin->namespace = $namespace;
-        $consignmlentAdmin->locked = true;
+        $consignmentAdmin->locked = true;
         $consignmentAdmin->description = __( 'All Consignment Admin Functions.' );
         $consignmentAdmin->dashid = 'store';
         $consignmentAdmin->save();
