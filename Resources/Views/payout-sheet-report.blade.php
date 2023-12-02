@@ -1,7 +1,7 @@
 @extends( 'layout.dashboard' )
 
 @section( 'layout.dashboard.with-title' )
-    <ns-consignor-sales-report inline-template>
+    <ns-payout-sheet-report inline-template>
         <div id="report-section" class="px-4">
             <div class="flex -mx-2">
                 {{--<div class="px-2">--}}
@@ -10,18 +10,27 @@
                 {{--<div class="px-2">--}}
                     {{--<ns-date-time-picker :date="endDate" @change="setEndDate( $event )"></ns-date-time-picker>--}}
                 {{--</div>--}}
-                <div class="px-2">
-                    <button @click="loadReport()" class="rounded flex justify-between bg-input-button shadow py-1 items-center text-primary px-2">
-                        <i class="las la-sync-alt text-xl"></i>
-                        <span class="pl-2">{{ __( 'Refresh' ) }}</span>
-                    </button>
-                </div>
+                {{--<div class="px-2">--}}
+                    {{--<button @click="loadReport()" class="rounded flex justify-between bg-input-button shadow py-1 items-center text-primary px-2">--}}
+                        {{--<i class="las la-sync-alt text-xl"></i>--}}
+                        {{--<span class="pl-2">{{ __( 'Refresh' ) }}</span>--}}
+                    {{--</button>--}}
+                {{--</div>--}}
                 <div class="px-2">
                     <button @click="printSaleReport()" class="rounded flex justify-between bg-input-button shadow py-1 items-center text-primary px-2">
                         <i class="las la-print text-xl"></i>
                         <span class="pl-2">{{ __( 'Print' ) }}</span>
                     </button>
                 </div>
+            </div>
+            <div>
+                <ns-search
+                        placeholder="{{ __( 'Consignor username or email...' ) }}"
+                        label="username"
+                        value="id"
+                        @select="loadReport( $event )"
+                        url="{{ ns()->route( 'ns.consignment.search.sellers' ) }}"
+                ></ns-search>
             </div>
             {{--<div class="flex -mx-2">--}}
                 {{--<div class="px-2">--}}
@@ -43,13 +52,14 @@
                     {{--</button>--}}
                 {{--</div>--}}
             {{--</div>--}}
-            <div id="sale-report" class="anim-duration-500 fade-in-entrance">
+            <div id="payout-report" class="anim-duration-500 fade-in-entrance">
                 <div class="flex w-full">
                     <div class="my-4 flex justify-between w-full">
                         <div class="text-secondary">
                             <ul>
                                 <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'Date : %s' ), ns()->date->getNowFormatted() ) }}</li>
                                 <li class="pb-1 border-b border-dashed">{{ __( 'Document : Consignor Sales Report' ) }}</li>
+                                <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'Consignor : %s' ), '{' . '{selectedConsignorName}' . '}' ) }}</li>
                                 <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'By : %s' ), Auth::user()->username ) }}</li>
                             </ul>
                         </div>
@@ -82,7 +92,7 @@
                                             {{--<td class="p-2 border text-right border-success-primary">@{{ summary.shipping | currency }}</td>--}}
                                         {{--</tr>--}}
                                         <tr class="">
-                                            <td width="200" class="font-semibold p-2 border text-left bg-success-secondary border-success-secondary text-white">{{ __( 'Estimated Payout' ) }}</td>
+                                            <td width="200" class="font-semibold p-2 border text-left bg-success-secondary border-success-secondary text-white">{{ __( 'Payout Amount' ) }}</td>
                                             <td class="p-2 border text-right border-success-primary">@{{ summary.total | currency }}</td>
                                         </tr>
                                         </tbody>
@@ -104,7 +114,7 @@
                                 <th width="150" class="border p-2">{{ __( 'Quantity' ) }}</th>
                                 {{--<th width="150" class="border p-2">{{ __( 'Discounts' ) }}</th>--}}
                                 {{--<th width="150" class="border p-2">{{ __( 'Taxes' ) }}</th>--}}
-                                {{--<th width="150" class="border p-2">{{ __( 'Total' ) }}</th>--}}
+                                <th width="150" class="border p-2">{{ __( 'Total' ) }}</th>
                             </tr>
                             </thead>
                             <tbody class="text-primary">
@@ -114,18 +124,18 @@
                                 <td class="p-2 border text-right">@{{ product.quantity }}</td>
                                 {{--<td class="p-2 border text-right">@{{ product.discount | currency }}</td>--}}
                                 {{--<td class="p-2 border text-right">@{{ product.tax_value | currency }}</td>--}}
-                                {{--<td class="p-2 border text-right">@{{ product.total_price | currency }}</td>--}}
+                                <td class="p-2 border text-right">@{{ product.total_price | currency }}</td>
                             </tr>
                             </tbody>
                             {{--<tfoot class="text-primary font-semibold">--}}
                             {{--<tr>--}}
-                                {{--<td class="p-2 border text-primary"></td>--}}
-                                {{--<td class="p-2 border text-primary"></td>--}}
-                                {{--<td class="p-2 border text-primary"></td>--}}
+                                <td class="p-2 border text-primary"></td>
+                                <td class="p-2 border text-primary"></td>
+                                <td class="p-2 border text-primary"></td>
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'quantity' ) }}</td>--}}
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'discount' ) | currency }}</td>--}}
                                 {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'tax_value' ) | currency }}</td>--}}
-                                {{--<td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'total_price' ) | currency }}</td>--}}
+                                <td class="p-2 border text-right text-primary">@{{ computeTotal( result, 'total_price' ) | currency }}</td>
                             {{--</tr>--}}
                             {{--</tfoot>--}}
                         </table>
@@ -133,7 +143,7 @@
                 </div>
             </div>
         </div>
-    </ns-consignor-sales-report>
+    </ns-payout-sheet-report>
 @endsection
 
 @section( 'layout.dashboard.footer.inject' )
@@ -142,7 +152,7 @@
 
         // TODO: There is a ton of extra code here which can be removed
 
-        Vue.component( 'ns-consignor-sales-report', {
+        Vue.component( 'ns-payout-sheet-report', {
             data() {
                 return {
                     // search plus / minus 1 month
@@ -151,6 +161,7 @@
                     result: [],
                     users: [],
                     summary: {},
+                    selectedConsignorName: 'None',
                     selectedUser: '',
                     reportType: {
                         label: __( 'Report Type' ),
@@ -199,12 +210,12 @@
             },
             beforeMount() {
                 // run the report on page load
-                this.loadReport()
+                //this.loadReport()
             },
             methods: {
 
                 printSaleReport() {
-                    this.$htmlToPaper( 'sale-report' );
+                    this.$htmlToPaper( 'payout-report' );
                 },
                 setStartDate( moment ) {
                     this.startDate  =   moment.format();
@@ -287,9 +298,10 @@
                     return __( 'Unknown' );
                 },
 
-                loadReport() {
+                loadReport( $consignor ) {
 
-                    console.log('loadReport');
+                    console.log('loadReport, user_id: ' + $consignor.id);
+                    this.selectedConsignorName = $consignor.username;
 
                     if ( this.startDate === null || this.endDate ===null ) {
                         return nsSnackBar.error( __( 'Unable to proceed. Select a correct time range.' ) ).subscribe();
@@ -303,11 +315,11 @@
                     }
 
                     nsHttpClient.post( '/dashboard/consignment/reports/consignor-sales-report', {
-                    //nsHttpClient.post( '/api/nexopos/v4/reports/sale-report', {
                         startDate: this.startDate,
                         endDate: this.endDate,
-                        type: this.reportType.value,
-                        user_id: this.filterUser.value
+                        //type: this.reportType.value,
+                        user_id: this.filterUser.value,
+                        search: $consignor.id,
                     }).subscribe({
                         next: response => {
                             this.result     =   response.result;
@@ -334,6 +346,19 @@
                 setEndDate( moment ) {
                     this.endDate    =   moment.format();
                 },
+
+                handleselectedConsignor( consignor ) {
+                    this.selectedProduct   =   product;
+
+                    nsHttpClient.post( `/dashboard/consignment/consignor-contact-info/`, {
+                        author: product.author
+                    }).subscribe( result => {
+                        this.report     =   result;
+                    }, error => {
+                        nsSnackBar.error( error.message ).subscribe();
+                    })
+                },
+
             }
         })
     </script>

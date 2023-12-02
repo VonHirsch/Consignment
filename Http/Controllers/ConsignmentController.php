@@ -178,7 +178,7 @@ class ConsignmentController extends DashboardController
 
         $search = $request->input( 'search' );
 
-        $sellers = User::where( 'email', 'like', '%' . $search . '%' )
+        $sellers = User::where( 'username', 'like', '%' . $search . '%' )
             ->orWhere( 'email', 'like', '%' . $search . '%' )
             ->get();
 
@@ -306,7 +306,6 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
-    // ns-search.vue requires a collection of models (->get), it doesn't work with a single (->first)
     public function searchBarcodes( Request $request )
     {
         ns()->restrict([ 'nexopos.consignment' ]);
@@ -323,23 +322,6 @@ class ConsignmentController extends DashboardController
         }
 
         return $products;
-    }
-
-    public function searchCustomers( Request $request )
-    {
-        ns()->restrict([ 'nexopos.consignment' ]);
-
-        Log::debug('>>> searchCustomers');
-
-        $search = $request->input( 'search' );
-        $customers = Customer::with( 'billing' )
-            ->with( 'shipping' )
-            ->where( 'name', 'like', '%' . $search . '%' )
-            ->orWhere( 'email', 'like', '%' . $search . '%' )
-            ->orWhere( 'phone', 'like', '%' . $search . '%' )
-            ->get();
-
-        return $customers;
     }
 
     public function getConsignorContactInfo( Request $request )
@@ -461,8 +443,22 @@ class ConsignmentController extends DashboardController
         return ConsignmentSettings::renderForm();
     }
 
+
     // ------------------------------------------------------
-    // Reports
+    // Payout Sheet Report
+    // ------------------------------------------------------
+
+    public function payoutSheetReport()
+    {
+        ns()->restrict([ 'nexopos.consignment.admin-features' ]);
+        return $this->view( 'Consignment::payout-sheet-report', [
+            'title' => __( 'Payout Sheet' ),
+            'description' => __( 'Provides detailed a payout report for the selected Consignor' ),
+        ]);
+    }
+
+    // ------------------------------------------------------
+    // Consignor Sales Report
     // ------------------------------------------------------
 
     public function consignorSalesReport()
@@ -482,9 +478,22 @@ class ConsignmentController extends DashboardController
     public function getConsignorSalesReport( Request $request )
     {
         ns()->restrict([ 'nexopos.consignment' ]);
+
+        $search = $request->input( 'search' );
+        Log::debug('>>> getConsignorSalesReport, user_id: ' . $search);
+
+        // if user has the correct permissions, then filter by passed in search term (user_id)
+        $isAdmin = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]);
+
+        if ($isAdmin && $search) {    // if a $search hasn't been passed in, assume this is an admin using the default "My Ssles" screen as a normal user
+            $author = $search;
+        } else {
+            $author = Auth::id();
+        }
+
         // In the case of the consignors sales report, we're only concerned with type 'products_report', and for the current user
         // The start & end dates are hard-coded to +/- one month in the blade
-        return $this->getConsignorProductsReports( $request->input( 'startDate' ), $request->input( 'endDate' ), Auth::id() );
+        return $this->getConsignorProductsReports( $request->input( 'startDate' ), $request->input( 'endDate' ), $author );
     }
 
     public function getConsignorProductsReports( $start, $end, $user_id = null )
@@ -509,7 +518,7 @@ class ConsignmentController extends DashboardController
         $OrdersProducts = DB::table( $orderProductTable )
             ->join( $orderTable, $orderTable . '.id', '=', $orderProductTable . '.order_id' )
             ->join( $productsTable, $productsTable . '.id', '=', $orderProductTable . '.product_id' )
-            ->where( $productsTable . '.author', '=', Auth::id() )
+            ->where( $productsTable . '.author', '=', $user_id )
             ->where( $orderTable . '.payment_status', '=',Order::PAYMENT_PAID )->get();
 
         // TODO: Refunds: if the payment_status is "partially_refunded" then query the ns_nexopos_orders_products_refunds table to see which product_id was refunded

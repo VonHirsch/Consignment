@@ -68,7 +68,7 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::get( '/consignment/print-labels-by-item', [ ConsignmentController::class, 'printLabelsByItem' ]);
 
         // Search Sellers
-        Route::post( '/consignment/sellers/search', [ ConsignmentController::class, 'searchSellers' ]);
+        Route::post( '/consignment/sellers/search', [ ConsignmentController::class, 'searchSellers' ])->name( ns()->routeName( 'ns.consignment.search.sellers' ) );;
 
         // Contact Sellers
         Route::get( '/consignment/contact-sellers', [ ConsignmentController::class, 'contactSellers' ]);
@@ -82,6 +82,9 @@ Route::prefix( 'dashboard' )->group( function() {
         // Reports
         Route::get( '/consignment/reports/consignor-sales', [ ConsignmentController::class, 'consignorSalesReport' ]);
         Route::post( '/consignment/reports/consignor-sales-report', [ ConsignmentController::class, 'getConsignorSalesReport' ]);
+
+        // Payout Sheets - this screen re-uses searchSellers & getConsignorSalesReport
+        Route::get( '/consignment/reports/payout-sheet', [ ConsignmentController::class, 'payoutSheetReport' ]);
 
         // manage.options permissions only - these aren't used atm
         Route::get( '/consignment/options', [ ConsignmentController::class, 'showModuleOptionsPage' ]);
