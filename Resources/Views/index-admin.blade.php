@@ -48,7 +48,7 @@ use Illuminate\Support\Facades\View;
                     <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
                             <h3 class="text-2xl font-black">
-                                Lables by Item
+                                Labels by Item
                             </h3>
                         </div>
                     </div>

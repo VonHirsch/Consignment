@@ -237,9 +237,10 @@ class ConsignmentController extends DashboardController
             });
     }
 
+    // Return all products for a user
     public function allProducts( Request $request )
     {
-        ns()->restrict([ 'nexopos.consignment' ]);
+        ns()->restrict([ 'nexopos.consignment', 'nexopos.consignment.print-labels' ]);
 
         return $this->getAllConsignorProducts(
             search: $request->input( 'search' )
