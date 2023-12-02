@@ -88,7 +88,11 @@ class ConsignmentController extends DashboardController
         // This prevents someone from viewing another's item
         ConsignmentModule::CheckAuthor($product->author);
 
-        return ProductCrud::form( $product );
+        // This is used to edit an item from "My Items" and "All Items", so set the return url to the previous
+        return ProductCrud::form( $product, [
+            'returnUrl' => url()->previous(),
+        ]);
+
     }
 
     // ------------------------------------------------------

@@ -170,9 +170,7 @@ class CreateConsignmentSecurity extends Migration
         $namespace = 'nexopos.consignment.print-labels';
         $permission = Permission::namespace( $namespace );
         Role::namespace( 'admin' )->addPermissions( $permission );
-        Role::namespace( 'nexopos.consignment.administrator' )->addPermissions( $permission );
         Role::namespace( 'nexopos.consignment.printer' )->addPermissions( $permission );
-        Role::namespace( 'nexopos.consignment.payout' )->addPermissions( $permission );
 
         // Consignment payout permission
         $namespace = 'nexopos.consignment.manage-payouts';
