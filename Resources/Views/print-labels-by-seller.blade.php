@@ -98,6 +98,7 @@ Vue.component( 'label-printing', {
     name: 'label-printing',
     data() {
         return {
+            seller_user_id: null,
             product_field: [
                 {
                     label: 'Product Field',
@@ -107,7 +108,7 @@ Vue.component( 'label-printing', {
             ],
             resultSuggestions: [],
             fields: [],
-            search_product: '',
+            search_seller: '',
             searchTimer: null,
             products: [],
             itemsToPrint: [],
@@ -115,11 +116,11 @@ Vue.component( 'label-printing', {
         }
     },
     watch: {
-        search_product() {
-            if ( this.search_product.length > 0 ) {
+        search_seller() {
+            if ( this.search_seller.length > 0 ) {
                 clearTimeout( this.searchTimer );
                 this.searchTimer    =   setTimeout( () => {
-                    this.searchProduct()
+                    this.searchSellers()
                 }, 500 );
             } else {
                 this.resultSuggestions      =   [];
@@ -172,46 +173,22 @@ Vue.component( 'label-printing', {
             ` );
             window.labelPrintPopup.document.writeln( paper.outerHTML );
         },
-        async addProduct( product ) {
+        async addSeller( seller ) {
             try {
-                // Skip the pop-up to streamline this for consignors
-                //await this.editProduct( product );
-
-                product.selectedUnitQuantity    =   product.unit_quantities[0];
-                product.times                   =   1;
-
-                this.$forceUpdate();
-
+                this.seller_user_id = seller.id;
                 this.resultSuggestions      =   [];
-                this.search_product         =   '';
-
-                //console.log(product);
-                this.products.push( product );
-
+                this.products = [];
+                this.loadAll();
             } catch( exception ) {
                 console.log( exception );
             }
         },
 
-        async editProduct( product ) {
-            return new Promise( async ( resolve, reject ) => {
-                const result    =   ( await new Promise( ( resolve, reject ) => {
-                    Popup.show( nsLabelsProductSettings, { product, resolve, reject });
-                }) );
-
-                product.selectedUnitQuantity    =   result.selectedUnitQuantity;
-                product.times                   =   result.times;
-
-                this.$forceUpdate();
-
-                return resolve( product );
-            })
-        },
-
-        searchProduct() {
-            nsHttpClient.post( `/api/nexopos/v4/products/search`, { search: this.search_product })
+        searchSellers() {
+            nsHttpClient.post( `/dashboard/consignment/sellers/search`, { search: this.search_seller })
                 .subscribe( result => {
                     this.resultSuggestions      =   result;
+                    //console.log(result);
                 }, ( error ) => {
                     nsSnackBar.error( error.message ).subscribe();
                 })
@@ -223,9 +200,27 @@ Vue.component( 'label-printing', {
                 const reference     =   ( new Array( parseInt( product.times ) ) )
                     .fill( '' )
                     .map( _ => product );
-                console.log( reference );
+                //console.log( reference );
                 this.itemsToPrint.push( ...reference );
             });
+        },
+        loadAll() {
+            nsHttpClient.post( `/dashboard/consignment/products/all`, { search: this.seller_user_id })
+                .subscribe( result => {
+                    this.allResults      =   result;
+                    result.forEach((product, index) => {
+                        //console.log(product, index)
+
+                        product.selectedUnitQuantity    =   product.unit_quantities[0];
+                        product.times                   =   1;
+
+                        this.products.push( product );
+                    })
+
+                }, ( error ) => {
+                    nsSnackBar.error( error.message ).subscribe();
+                })
+
         }
     },
     mounted() {
@@ -330,17 +325,21 @@ Vue.component( 'label-printing', {
                     <div>
                         <div class="shadow ns-box mb-4">
                             <div class="header border-b ns-box-header p-2">
-                                <h3 class="font-semibold">{{ __( 'Products' ) }}</h3>
+                                <h3 class="font-semibold">{{ __( 'Search Sellers' ) }}</h3>
+                            </div>
+                            <div class="border-t ns-box-footer p-2 flex justify-between">
+                                <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
+                                <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
                             </div>
                             <div class="body p-2">
                                 <div class="input-group info rounded border-2">
-                                    <input v-model="search_product" class=" w-full p-2" placeholder="{{ __( 'Search Products...' ) }}"/>
+                                    <input v-model="search_seller" class=" w-full p-2" placeholder="{{ __( 'Username or email...' ) }}"/>
                                 </div>
                                 <div class="h-0 relative anim-duration-300 fade-in-entrance" v-if="resultSuggestions.length > 0">
                                     <ul class="shadow-lg ns-vertical-menu absolute w-full z-10">
-                                        <li @click="addProduct( product )" v-for="product of resultSuggestions" class="border p-2 flex flex-col cursor-pointer" style="margin-bottom:-1px;">
-                                            <span class="font-semibold">@{{ product.name }}</span>
-                                            <span class="text-xs">@{{ product.barcode }}</span>
+                                        <li @click="addSeller( product )" v-for="product of resultSuggestions" class="border p-2 flex flex-col cursor-pointer" style="margin-bottom:-1px;">
+                                            <span class="font-semibold">@{{ product.username }}</span>
+                                            <span class="text-xs">@{{ product.email }}</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -367,10 +366,6 @@ Vue.component( 'label-printing', {
                                         </li>
                                     </ul>
                                 </div>
-                            </div>
-                            <div class="border-t ns-box-footer p-2 flex justify-between">
-                                <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
-                                <ns-button @click="applySettings()" type="info">{{ __( 'Apply Settings' ) }}</ns-button>
                             </div>
                         </div>
                         <div class="shadow ns-box mb-4">

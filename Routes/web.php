@@ -67,6 +67,9 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::get( '/consignment/print-labels-by-seller', [ ConsignmentController::class, 'printLabelsBySeller' ]);
         Route::get( '/consignment/print-labels-by-item', [ ConsignmentController::class, 'printLabelsByItem' ]);
 
+        // Search Sellers
+        Route::post( '/consignment/sellers/search', [ ConsignmentController::class, 'searchSellers' ]);
+
         // Contact Sellers
         Route::get( '/consignment/contact-sellers', [ ConsignmentController::class, 'contactSellers' ]);
 

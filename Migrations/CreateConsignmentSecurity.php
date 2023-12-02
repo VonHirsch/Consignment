@@ -29,7 +29,7 @@ class CreateConsignmentSecurity extends Migration
         Default Security Settings:
             The nexopos 'admin' has all capabilities.
             The consignment admin has all capabilities except for payout.
-            The consignment printer role can only print labels.  This is intended for a 'self-service' type print station at the event.
+            The consignment printer role can only print labels.  This is intended for a 'self-service' type print kiosk station at the event.
             The consignment payout role has access manage payouts and consignment admin.
 
         PERMISSIONS
@@ -118,7 +118,7 @@ class CreateConsignmentSecurity extends Migration
         $consignmentAdmin = Role::firstOrNew([ 'namespace' => $namespace ]);
         $consignmentAdmin->name = __( 'Consignment Administrator' );
         $consignmentAdmin->namespace = $namespace;
-        $consignmentAdmin->locked = true;
+        $consignmlentAdmin->locked = true;
         $consignmentAdmin->description = __( 'All Consignment Admin Functions.' );
         $consignmentAdmin->dashid = 'store';
         $consignmentAdmin->save();

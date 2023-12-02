@@ -370,7 +370,7 @@ Vue.component( 'label-printing', {
                             </div>
                             <div class="border-t ns-box-footer p-2 flex justify-between">
                                 <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
-                                <ns-button @click="applySettings()" type="info">{{ __( 'Apply Settings' ) }}</ns-button>
+                                <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
                             </div>
                         </div>
                         <div class="shadow ns-box mb-4">

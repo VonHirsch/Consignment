@@ -15,6 +15,7 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\ProductUnitQuantity;
+use App\Models\User;
 use App\Services\Users;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -141,32 +142,6 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
-//
-//    public function editAllPaymentPrefs()
-//    {
-//        ns()->restrict([ 'nexopos.consignment' ]);
-//
-//
-//        if (ConsignmentModule::IsConsignmentAdmin()) {
-//            return redirect( ns()->route( 'ns.consignorsettings.list' ) );
-//        }
-//
-//        $user = app()->make( Users::class );
-//        if ($user->is([ 'admin' ]) ) {
-//            // Admins will see the full crud listing
-//            return redirect( ns()->route( 'ns.consignorsettings.list' ) );
-//        } else {
-//
-//            $consignorSettings = ConsignorSettings::where('author', Auth::id())->first();
-//
-//            return ConsignorSettingsCrud::form($consignorSettings, [
-//                'title' => __('Payment Settings'),
-//                'description' => __('Payment and Contact Preferences'),
-//                'returnUrl' => ns()->route('ns.consignment.index'),
-//            ]);
-//        }
-//    }
-
     // ------------------------------------------------------
     // Print labels / barcodes
     // ------------------------------------------------------
@@ -175,6 +150,7 @@ class ConsignmentController extends DashboardController
     {
         ns()->restrict([ 'nexopos.consignment' ]);
 
+        // Filtered item printing
         return $this->view( 'Consignment::consignor-print-labels', [
             'title' => __( 'Print Labels' ),
             'description' => __( 'Customize and print products labels.' ),
@@ -183,7 +159,8 @@ class ConsignmentController extends DashboardController
 
     public function printLabelsBySeller()
     {
-        ns()->restrict([ 'nexopos.consignment.admin-features' ]);
+        // Used by admins and the label print kiosk user
+        ns()->restrict([ 'nexopos.consignment.admin-features', 'nexopos.consignment.print-labels' ]);
 
         return $this->view( 'Consignment::print-labels-by-seller', [
             'title' => __( 'Print Labels By Seller' ),
@@ -191,8 +168,23 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
+    public function searchSellers( Request $request )
+    {
+        ns()->restrict([ 'nexopos.consignment.admin-features', 'nexopos.consignment.print-labels' ]);
+
+        $search = $request->input( 'search' );
+
+        $sellers = User::where( 'email', 'like', '%' . $search . '%' )
+            ->orWhere( 'email', 'like', '%' . $search . '%' )
+            ->get();
+
+        return $sellers;
+
+    }
+
     public function printLabelsByItem()
     {
+        // Unfiltered item printing
         ns()->restrict([ 'nexopos.consignment.admin-features' ]);
 
         return $this->view( 'Consignment::print-labels-by-item', [
@@ -201,20 +193,16 @@ class ConsignmentController extends DashboardController
         ]);
     }
 
-
-// TODO - Remove unneeded args, optimize
     public function searchProducts( Request $request )
     {
         ns()->restrict([ 'nexopos.consignment' ]);
 
         return $this->searchConsignorProducts(
-            search: $request->input( 'search' ),
-                arguments: (array) $request->input( 'arguments' )
+            search: $request->input( 'search' )
             );
     }
 
-    // TODO - Remove unneeded args, optimize
-    public function searchConsignorProducts( $search, $limit = 5, $arguments = [] )
+    public function searchConsignorProducts( $search, $limit = 5)
     {
         /**
          * @var Builder $query
@@ -234,16 +222,6 @@ class ConsignmentController extends DashboardController
             ])
             ->limit( $limit );
 
-        /**
-         * if custom arguments are provided
-         * we'll parse it and convert it into
-         * eloquent arguments
-         */
-//        if ( ! empty( $arguments ) ) {
-//            $eloquenize = new EloquenizeArrayService;
-//            $eloquenize->parse( $query, $arguments );
-//        }
-
         return $query->get()
             ->map( function ( $product ) {
                 $units = json_decode( $product->purchase_unit_ids );
@@ -259,41 +237,40 @@ class ConsignmentController extends DashboardController
             });
     }
 
-    // TODO - Remove unneeded args, optimize
     public function allProducts( Request $request )
     {
         ns()->restrict([ 'nexopos.consignment' ]);
 
         return $this->getAllConsignorProducts(
-            search: $request->input( 'search' ),
-                    arguments: (array) $request->input( 'arguments' )
-                );
+            search: $request->input( 'search' )
+            );
     }
 
-    // TODO - Remove unneeded args, optimize
-    public function getAllConsignorProducts( $search, $limit = 100, $arguments = [] )
+    public function getAllConsignorProducts( $search, $limit = 500)
     {
+
+        Log::debug('>>> getAllConsignorProducts, user_id: ' . $search);
+
+        // if user has the correct permissions, then filter by passed in search term (user_id)
+        $isPrinter = ns()->allowedTo([ 'nexopos.consignment.admin-features', 'nexopos.consignment.print-labels' ]);
+
+        if ($isPrinter && $search) {    // if a $search hasn't been passed in, assume this is an admin using the default "Print Labels" screen as a normal user
+            $author = $search;
+        } else {
+            $author = Auth::id();
+        }
+
         /**
          * @var Builder $query
          */
         $query = Product::query()
             ->searchable()
-            ->where('author', '=', Auth::id())
+            ->where('author', '=', $author)
             ->with([
                 'unit_quantities.unit',
                 'tax_group.taxes',
             ])
             ->limit( $limit );
-
-        /**
-         * if custom arguments are provided
-         * we'll parse it and convert it into
-         * eloquent arguments
-         */
-//        if ( ! empty( $arguments ) ) {
-//            $eloquenize = new EloquenizeArrayService;
-//            $eloquenize->parse( $query, $arguments );
-//        }
 
         return $query->get()
             ->map( function ( $product ) {
