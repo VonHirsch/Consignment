@@ -164,7 +164,10 @@ class ConsignmentController extends DashboardController
     public function printLabelsBySeller()
     {
         // Used by admins and the label print kiosk user
-        ns()->restrict([ 'nexopos.consignment.admin-features', 'nexopos.consignment.print-labels' ]);
+        $canAccess = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]) || ns()->allowedTo([ 'nexopos.consignment.print-labels' ]);
+        if (!$canAccess) {
+            ns()->restrict([ '' ]);
+        }
 
         return $this->view( 'Consignment::print-labels-by-seller', [
             'title' => __( 'Print Labels By Seller' ),
@@ -174,7 +177,10 @@ class ConsignmentController extends DashboardController
 
     public function searchSellers( Request $request )
     {
-        ns()->restrict([ 'nexopos.consignment.admin-features', 'nexopos.consignment.print-labels' ]);
+        $canAccess = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]) || ns()->allowedTo([ 'nexopos.consignment.print-labels' ]);
+        if (!$canAccess) {
+            ns()->restrict([ '' ]);
+        }
 
         $search = $request->input( 'search' );
 
@@ -244,7 +250,14 @@ class ConsignmentController extends DashboardController
     // Return all products for a user
     public function allProducts( Request $request )
     {
-        ns()->restrict([ 'nexopos.consignment', 'nexopos.consignment.print-labels' ]);
+
+        // TODO:  This only seems to honor the last one in the comma delimited list, bugfix?
+        //ns()->restrict([ 'nexopos.consignment', 'nexopos.consignment.print-labels' ]);
+
+        $canAccess = ns()->allowedTo([ 'nexopos.consignment' ]) || ns()->allowedTo([ 'nexopos.consignment.print-labels' ]);
+        if (!$canAccess) {
+            ns()->restrict([ '' ]);
+        }
 
         return $this->getAllConsignorProducts(
             search: $request->input( 'search' )
