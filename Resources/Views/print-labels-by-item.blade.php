@@ -231,7 +231,13 @@ Vue.component( 'label-printing', {
     mounted() {
         const validation    =   new FormValidation;
         this.fields         =   validation.createFields([
+
             {
+                type: 'number',
+                label: 'Max Item Name Length',
+                name: 'max_item_name_len',
+                value: 20
+            }, {
                 type: 'select',
                 label: 'Items Per Row',
                 name: 'max_columns',
@@ -265,9 +271,9 @@ Vue.component( 'label-printing', {
         this.visibilityFields   =   [
             {
                 type: 'checkbox',
-                label: 'Show Store Name',
-                name: 'show_store_name',
-                value: false,
+                label: 'Page Breaks',
+                name: 'page_breaks',
+                value: true,
             }, {
                 type: 'checkbox',
                 label: 'Show Barcode Text',
@@ -283,7 +289,12 @@ Vue.component( 'label-printing', {
                 label: 'Show Product Name',
                 name: 'show_product_name',
                 value: true,
-            }, 
+            }, {
+                type: 'checkbox',
+                label: 'Show Store Name',
+                name: 'show_store_name',
+                value: false,
+            },
         ]
     }
 })
@@ -322,11 +333,11 @@ Vue.component( 'label-printing', {
 
                                 {{--LABEL--}}
 
-                                <div class="flex justify-center py-1" v-if="visibility.show_product_name">
-                                    <span>@{{ item.name }}</span>
+                                <div class="flex justify-center py-0 text-xs text-truncate" v-if="visibility.show_product_name">
+                                    <span>@{{ item.name.substring(0, (form.max_item_name_len - 1)) }}</span>
                                 </div>
-                                <div class="flex justify-center py-1" v-if="visibility.show_barcode_text">
-                                    <span>@{{ item.selectedUnitQuantity.sale_price | currency }}  - @{{ item.selectedUnitQuantity.barcode }}</span>
+                                <div class="flex justify-center py-0 text-xs" v-if="visibility.show_barcode_text">
+                                    <span>@{{ item.selectedUnitQuantity.sale_price | currency }}  - @{{ item.selectedUnitQuantity.barcode.substring(0, 6) }}</span>
                                 </div>
 
                                 <div class="flex justify-center flex-col py-1">
@@ -338,7 +349,7 @@ Vue.component( 'label-printing', {
                                 </div>
 
                                 {{--PAGE BREAK--}}
-                                <div style="page-break-inside:avoid;page-break-after:always"></div>
+                                <div style="page-break-inside:avoid;page-break-after:always" v-if="visibility.page_breaks"></div>
 
                             </div>
                         </div>

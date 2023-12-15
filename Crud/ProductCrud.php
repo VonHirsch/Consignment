@@ -247,7 +247,10 @@ class ProductCrud extends CrudService
                             'name'  =>  'name',
                             'label' =>  __( 'Name' ),
                             'value' =>  $entry->name ?? '',
-                            'validation' => 'required',
+                            //'validation' => 'required',
+                            'validation' => 'required|max:25',
+                            'description' => 'Max 25 characters',
+
                         ], [
 //                            'type'  =>  'text',
 //                            'name'  =>  'tax_type',
