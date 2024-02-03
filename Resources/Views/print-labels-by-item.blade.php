@@ -50,7 +50,7 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
         this.fields         =   this.validation.createFields([
             {
                 label: 'Unit',
-                type: 'select',
+                type: 'hidden',
                 name: 'selectedUnitQuantity',
                 description: 'Choose the unit to apply for the item',
                 options: product.unit_quantities.map( unit_quantity => {
@@ -62,7 +62,7 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
                 value: product.selectedUnitQuantity || product.unit_quantities[0]
             }, {
                 label: 'Unit',
-                type: 'select',
+                type: 'hidden',
                 name: 'procurement_id',
                 description: 'Choose quantity from procurement',
                 options: product.unit_quantities.map( unit_quantity => {
@@ -73,10 +73,10 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
                 }),
                 value: product.procurement_id
             }, {
-                label: 'Quantity',
+                label: 'Label Quantity',
                 type: 'number',
                 name: 'times',
-                description: 'Define how many time the product will be printed',
+                description: 'Define how many times the label will be printed',
                 value: product.times || 1
             }
         ]);
@@ -370,11 +370,17 @@ Vue.component( 'label-printing', {
                     <div>
                         <div class="shadow ns-box mb-4">
                             <div class="header border-b ns-box-header p-2">
-                                <h3 class="font-semibold">{{ __( 'Products' ) }}</h3>
+                                <h3 class="font-semibold">Search Items</h3>
                             </div>
+
+                            <div class="border-t ns-box-footer p-2 flex justify-between">
+                                <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
+                                <ns-button @click="print()" type="success">Print</ns-button>
+                            </div>
+
                             <div class="body p-2">
                                 <div class="input-group info rounded border-2">
-                                    <input v-model="search_product" class=" w-full p-2" placeholder="{{ __( 'Search Products...' ) }}"/>
+                                    <input v-model="search_product" class=" w-full p-2" placeholder="{{ __( 'Search Items...' ) }}"/>
                                 </div>
                                 <div class="h-0 relative anim-duration-300 fade-in-entrance" v-if="resultSuggestions.length > 0">
                                     <ul class="shadow-lg ns-vertical-menu absolute w-full z-10">
@@ -408,10 +414,7 @@ Vue.component( 'label-printing', {
                                     </ul>
                                 </div>
                             </div>
-                            <div class="border-t ns-box-footer p-2 flex justify-between">
-                                <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
-                                <ns-button @click="print()" type="success">Print</ns-button>
-                            </div>
+
                         </div>
                         <div class="shadow ns-box mb-4">
                             <div class="header border-b ns-box-header p-2">

@@ -51,7 +51,7 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
             {
                 // Unit Quantity Dropdown
                 label: 'Unit',
-                type: 'select',
+                type: 'hidden',
                 name: 'selectedUnitQuantity',
                 description: 'Choose the unit to apply for the item',
                 options: product.unit_quantities.map( unit_quantity => {
@@ -64,7 +64,7 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
             }, {
                 // Procurement Unit Quantity Dropdown
                 label: 'Unit',
-                type: 'select',
+                type: 'hidden',
                 name: 'procurement_id',
                 description: 'Choose quantity from procurement',
                 options: product.unit_quantities.map( unit_quantity => {
@@ -77,10 +77,10 @@ const nsLabelsProductSettings   =   Vue.component( 'ns-labels-product-settings',
             },
             {
                 // Number of labels to print
-                label: 'Quantity',
+                label: 'Label Quantity',
                 type: 'number',
                 name: 'times',
-                description: 'Define how many time the product will be printed',
+                description: 'Define how many times the label will be printed',
                 value: product.times || 1
             }
         ]);
@@ -151,7 +151,7 @@ Vue.component( 'label-printing', {
         print() {
 
             if (this.itemsToPrint.length === 0) {
-                return nsSnackBar.error( __( 'Please click the "Load All" and "Create" Buttons first.' ) ).subscribe();
+                return nsSnackBar.error( __( 'Please click the "Create" Button first.' ) ).subscribe();
             }
 
             const windowFeatures = "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes"
@@ -231,7 +231,7 @@ Vue.component( 'label-printing', {
         applySettings() {
             this.itemsToPrint   =   [];
             if (this.products.length === 0) {
-                return nsSnackBar.error( __( 'Please click the "Load All" button first.' ) ).subscribe();
+                return nsSnackBar.error( __( 'Click the "Load All" button or search and select items first.' ) ).subscribe();
             }
             this.products.forEach( product => {
                 const reference     =   ( new Array( parseInt( product.times ) ) )
@@ -418,7 +418,7 @@ Vue.component( 'label-printing', {
                                     </ul>
                                 </div>
                                 <div class="flex flex-col" v-if="products.length > 0">
-                                    <h3 class="font-semibold">{{ __( 'Included Products' ) }}</h3>
+                                    <h3 class="font-semibold">{{ __( 'Included Items' ) }}</h3>
                                     <ul>
                                         <li v-for="product of products" :key="product.id" class="border border-box-elevation-edge bg-box-elevation-background p-2 flex justify-between items-center" style="margin-bottom:-1px;">
                                             <p class="flex flex-col">
