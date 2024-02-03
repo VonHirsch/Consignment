@@ -149,6 +149,11 @@ Vue.component( 'label-printing', {
             this.products.splice( index, 1 );
         },
         print() {
+
+            if (this.itemsToPrint.length === 0) {
+                return nsSnackBar.error( __( 'Please click the "Load All" and "Create" Buttons first.' ) ).subscribe();
+            }
+
             const windowFeatures = "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes"
 
             if ( window.labelPrintPopup ) {
@@ -225,6 +230,9 @@ Vue.component( 'label-printing', {
 
         applySettings() {
             this.itemsToPrint   =   [];
+            if (this.products.length === 0) {
+                return nsSnackBar.error( __( 'Please click the "Load All" button first.' ) ).subscribe();
+            }
             this.products.forEach( product => {
                 const reference     =   ( new Array( parseInt( product.times ) ) )
                     .fill( '' )
@@ -257,6 +265,11 @@ Vue.component( 'label-printing', {
         const validation    =   new FormValidation;
         this.fields         =   validation.createFields([
             {
+                type: 'number',
+                label: 'Max Item Name Length',
+                name: 'max_item_name_len',
+                value: 20
+            }, {
                 type: 'select',
                 label: 'Items Per Row',
                 name: 'max_columns',
@@ -273,10 +286,12 @@ Vue.component( 'label-printing', {
                 type: 'number',
                 label: 'Vertical Padding (pixels)',
                 name: 'veritcal_padding',
+                value: 0,
             }, {
                 type: 'number',
                 label: 'Horizontal Padding (pixels)',
                 name: 'horizontal_padding',
+                value: 5,
             }, {
                 type: 'number',
                 label: 'Barcode Height (pixels)',
@@ -288,25 +303,34 @@ Vue.component( 'label-printing', {
         this.visibilityFields   =   [
             {
                 type: 'checkbox',
-                label: 'Show Store Name',
-                name: 'show_store_name',
+                label: 'Page Break Between Labels',
+                name: 'page_breaks',
                 value: true,
-            }, {
-                type: 'checkbox',
+            }
+            , {
+                type: 'hidden',
                 label: 'Show Barcode Text',
                 name: 'show_barcode_text',
                 value: true,
-            }, {
-                type: 'checkbox',
+            }
+            , {
+                type: 'hidden',
                 label: 'Show Product Price',
                 name: 'show_product_price',
                 value: true,
-            }, {
-                type: 'checkbox',
+            }
+            , {
+                type: 'hidden',
                 label: 'Show Product Name',
                 name: 'show_product_name',
                 value: true,
-            }, 
+            }
+            , {
+                type: 'hidden',
+                label: 'Show Store Name',
+                name: 'show_store_name',
+                value: false,
+            },
         ]
     }
 })
@@ -324,29 +348,47 @@ Vue.component( 'label-printing', {
                         <div class="grid" :class="'grid-cols-' + ( form.max_columns || 1 )">
                             <div class="item border border-black" :style="itemsStyle" v-for="item of itemsToPrint">
                                 <h3 class="font-bold text-black text-xl text-center" v-if="visibility.show_store_name">{{ ns()->option->get( 'ns_store_name' ) }}</h3>
-                                <div class="flex justify-between py-1" v-if="visibility.show_product_name">
-                                    <span>{{ __( 'Product' ) }}</span>
-                                    <span>@{{ item.name }}</span>
+
+                                {{----}}
+                                {{--<div class="flex justify-between py-1" v-if="visibility.show_product_name">--}}
+                                    {{--<span>{{ __( 'Product' ) }}</span>--}}
+                                    {{--<span>@{{ item.name }}</span>--}}
+                                {{--</div>--}}
+                                {{--<div class="flex justify-between py-1" v-if="visibility.show_product_name">--}}
+                                    {{--<span>{{ __( 'Unit' ) }}</span>--}}
+                                    {{--<span>@{{ item.selectedUnitQuantity.unit.name }}</span>--}}
+                                {{--</div>--}}
+                                {{--<div class="flex justify-between py-1" v-if="visibility.show_barcode_text">--}}
+                                    {{--<span>{{ __( 'Barcode' ) }}</span>--}}
+                                    {{--<span>@{{ item.selectedUnitQuantity.barcode }}</span>--}}
+                                {{--</div>--}}
+                                {{--<div class="flex justify-between py-1" v-if="visibility.show_product_price">--}}
+                                    {{--<span>{{ __( 'Price' ) }}</span>--}}
+                                    {{--<span>@{{ item.selectedUnitQuantity.sale_price | currency }}</span>--}}
+                                {{--</div>--}}
+
+
+
+                                {{--LABEL--}}
+
+                                <div class="flex justify-center py-0 text-xs text-truncate" v-if="visibility.show_product_name">
+                                    <span>@{{ item.name.substring(0, (form.max_item_name_len - 1)) }}</span>
                                 </div>
-                                <div class="flex justify-between py-1" v-if="visibility.show_product_name">
-                                    <span>{{ __( 'Unit' ) }}</span>
-                                    <span>@{{ item.selectedUnitQuantity.unit.name }}</span>
+                                <div class="flex justify-center py-0 text-xs" v-if="visibility.show_barcode_text">
+                                    <span>@{{ item.selectedUnitQuantity.sale_price | currency }}  - @{{ item.selectedUnitQuantity.barcode.substring(0, 6) }}</span>
                                 </div>
-                                <div class="flex justify-between py-1" v-if="visibility.show_barcode_text">
-                                    <span>{{ __( 'Barcode' ) }}</span>
-                                    <span>@{{ item.selectedUnitQuantity.barcode }}</span>
-                                </div>
-                                <div class="flex justify-between py-1" v-if="visibility.show_product_price">
-                                    <span>{{ __( 'Price' ) }}</span>
-                                    <span>@{{ item.selectedUnitQuantity.sale_price | currency }}</span>
-                                </div>
+
                                 <div class="flex justify-center flex-col py-1">
                                     <img :style="{ height: form.barcode_height + 'px' }" :src="'{{ ns()->asset( 'storage/products/barcodes' ) }}/' + item.selectedUnitQuantity.barcode + '.png'" :alt="item.selectedUnitQuantity.barcode">
                                     {{--this is the part that put the barcode text smack dab in the middle of the barcode itself--}}
                                     {{--<div class="flex justify-center w-full">--}}
-                                        {{--<span class="-mt-4 bg-white inline-block p-1">@{{ item.selectedUnitQuantity.barcode }}</span>--}}
+                                    {{--<span class="-mt-4 bg-white inline-block p-1">@{{ item.selectedUnitQuantity.barcode }}</span>--}}
                                     {{--</div>--}}
                                 </div>
+
+                                {{--PAGE BREAK--}}
+                                <div style="page-break-inside:avoid;page-break-after:always" v-if="visibility.page_breaks"></div>
+
                             </div>
                         </div>
                     </div>
@@ -356,11 +398,12 @@ Vue.component( 'label-printing', {
                         <div class="shadow ns-box mb-4">
                             <div class="header border-b ns-box-header p-2">
                                 <h3 class="font-semibold">{{ __( 'My Items' ) }}</h3>
+                                <h5 class="font-semibold">(To start over, refresh the page)</h5>
                             </div>
                             <div class="border-t ns-box-footer p-2 flex justify-between">
-                                <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
                                 <ns-button @click="loadAll()" type="info">{{ __( 'Load All' ) }}</ns-button>
                                 <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
+                                <ns-button @click="print()" type="success">Print</ns-button>
                             </div>
                             <div class="body p-2">
                                 <div class="input-group info rounded border-2">

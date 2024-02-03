@@ -145,6 +145,11 @@ Vue.component( 'label-printing', {
             this.products.splice( index, 1 );
         },
         print() {
+
+            if (this.itemsToPrint.length === 0) {
+                return nsSnackBar.error( __( 'Please search and create labels before printing.' ) ).subscribe();
+            }
+
             const windowFeatures = "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes"
 
             if ( window.labelPrintPopup ) {
@@ -219,6 +224,9 @@ Vue.component( 'label-printing', {
 
         applySettings() {
             this.itemsToPrint   =   [];
+            if (this.products.length === 0) {
+                return nsSnackBar.error( __( 'Please search for and select items first.' ) ).subscribe();
+            }
             this.products.forEach( product => {
                 const reference     =   ( new Array( parseInt( product.times ) ) )
                     .fill( '' )
@@ -231,7 +239,6 @@ Vue.component( 'label-printing', {
     mounted() {
         const validation    =   new FormValidation;
         this.fields         =   validation.createFields([
-
             {
                 type: 'number',
                 label: 'Max Item Name Length',
@@ -271,26 +278,30 @@ Vue.component( 'label-printing', {
         this.visibilityFields   =   [
             {
                 type: 'checkbox',
-                label: 'Page Breaks',
+                label: 'Page Break Between Labels',
                 name: 'page_breaks',
                 value: true,
-            }, {
-                type: 'checkbox',
+            }
+            , {
+                type: 'hidden',
                 label: 'Show Barcode Text',
                 name: 'show_barcode_text',
                 value: true,
-            }, {
-                type: 'checkbox',
+            }
+            , {
+                type: 'hidden',
                 label: 'Show Product Price',
                 name: 'show_product_price',
                 value: true,
-            }, {
-                type: 'checkbox',
+            }
+            , {
+                type: 'hidden',
                 label: 'Show Product Name',
                 name: 'show_product_name',
                 value: true,
-            }, {
-                type: 'checkbox',
+            }
+            , {
+                type: 'hidden',
                 label: 'Show Store Name',
                 name: 'show_store_name',
                 value: false,
@@ -398,8 +409,8 @@ Vue.component( 'label-printing', {
                                 </div>
                             </div>
                             <div class="border-t ns-box-footer p-2 flex justify-between">
-                                <ns-button @click="print()" type="success"><i class="las la-print"></i></ns-button>
                                 <ns-button @click="applySettings()" type="info">{{ __( 'Create' ) }}</ns-button>
+                                <ns-button @click="print()" type="success">Print</ns-button>
                             </div>
                         </div>
                         <div class="shadow ns-box mb-4">
