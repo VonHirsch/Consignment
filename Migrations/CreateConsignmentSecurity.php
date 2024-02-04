@@ -163,6 +163,7 @@ class CreateConsignmentSecurity extends Migration
         $permission = Permission::namespace( $namespace );
         Role::namespace( 'admin' )->addPermissions( $permission );
         Role::namespace( 'user' )->addPermissions( $permission );
+        Role::namespace( 'nexopos.store.cashier' )->addPermissions( $permission );
         Role::namespace( 'nexopos.consignment.administrator' )->addPermissions( $permission );
         Role::namespace( 'nexopos.consignment.payout' )->addPermissions( $permission );
 
