@@ -177,6 +177,7 @@ class ConsignmentController extends DashboardController
 
     public function searchSellers( Request $request )
     {
+        // Used by admins and the label print kiosk user
         $canAccess = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]) || ns()->allowedTo([ 'nexopos.consignment.print-labels' ]);
         if (!$canAccess) {
             ns()->restrict([ '' ]);
@@ -187,6 +188,71 @@ class ConsignmentController extends DashboardController
         $sellers = User::where( 'username', 'like', '%' . $search . '%' )
             ->orWhere( 'email', 'like', '%' . $search . '%' )
             ->get();
+
+        return $sellers;
+
+    }
+
+    public function searchSellersForPayout( Request $request )
+    {
+
+        Log::debug('>>> searchSellersForPayout');
+
+        // Used on the payoutsheet search
+        $canAccess = ns()->allowedTo([ 'nexopos.consignment.admin-features' ]);
+        if (!$canAccess) {
+            ns()->restrict([ '' ]);
+        }
+
+        $search = $request->input( 'search' );
+
+        // Equivalent Query to Eloquent Query below
+        /*
+            SELECT
+                    <columnns>
+                    // These are subqueries, I could have just used a LEFT JOIN instead...
+                    (SELECT first_name from ns_nexopos_users_attributes WHERE ns_nexopos_users_attributes.user_id = ns_nexopos_users.id) AS first_name,
+                    (SELECT second_name from ns_nexopos_users_attributes WHERE ns_nexopos_users_attributes.user_id = ns_nexopos_users.id) AS second_name
+            FROM
+                ns_nexopos_users users
+            LEFT JOIN  <-- use LEFT JOIN to return records even if they haven't saved any consignor settings
+                ns_consignor_settings ON ns_consignor_settings.author = ns_nexopos_users.id
+            WHERE
+                <wildcard search query>
+        */
+
+        // Pull information from:
+        //      Users Table (username, registered email)
+        //      Consignment "Payment Settings" screen (payment info, address, shared email, paypal email)
+        //      Users Profile Screen (Firstname, Lastname)
+
+        $usersTable = Hook::filter( 'ns-model-table', 'nexopos_users' );
+        //$userAttributesTable = Hook::filter( 'ns-model-table', 'nexopos_users_attributes' );
+        $consignorSettingsTable = Hook::filter( 'ns-model-table', 'consignor_settings' );
+
+        $sellers = DB::table( $usersTable )
+            ->select([
+                $usersTable . '.id',
+                $usersTable . '.username',
+                $usersTable . '.email',
+                $consignorSettingsTable . '.email as shared_email',
+                $consignorSettingsTable . '.phone',
+                $consignorSettingsTable . '.paypal_email',
+                $consignorSettingsTable . '.street',
+                $consignorSettingsTable . '.city',
+                $consignorSettingsTable . '.state',
+                $consignorSettingsTable . '.zip',
+                $consignorSettingsTable . '.payout_preference',
+                $consignorSettingsTable . '.notes',
+            ])
+            ->addSelect(DB::raw('(SELECT first_name from ns_nexopos_users_attributes WHERE ns_nexopos_users_attributes.user_id = ns_nexopos_users.id) AS first_name'))
+            ->addSelect(DB::raw('(SELECT second_name from ns_nexopos_users_attributes WHERE ns_nexopos_users_attributes.user_id = ns_nexopos_users.id) AS second_name'))
+            ->leftJoin( $consignorSettingsTable, $consignorSettingsTable . '.author', '=', $usersTable . '.id' )
+            ->where( $usersTable . '.username', 'like', '%' . $search . '%' )
+            ->orWhere( $usersTable . '.email', 'like', '%' . $search . '%' )
+            ->get();
+
+        ConsignmentModule::DumpVar($sellers);
 
         return $sellers;
 

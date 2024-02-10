@@ -68,7 +68,10 @@ Route::prefix( 'dashboard' )->group( function() {
         Route::get( '/consignment/print-labels-by-item', [ ConsignmentController::class, 'printLabelsByItem' ]);
 
         // Search Sellers
-        Route::post( '/consignment/sellers/search', [ ConsignmentController::class, 'searchSellers' ])->name( ns()->routeName( 'ns.consignment.search.sellers' ) );;
+        Route::post( '/consignment/sellers/search', [ ConsignmentController::class, 'searchSellers' ])->name( ns()->routeName( 'ns.consignment.search.sellers' ) );
+
+        // Search Sellers on Payout Sheet Screen
+        Route::post( '/consignment/sellers/searchForPayout', [ ConsignmentController::class, 'searchSellersForPayout' ])->name( ns()->routeName( 'ns.consignment.search.sellersForPayout' ) );
 
         // Contact Sellers
         Route::get( '/consignment/contact-sellers', [ ConsignmentController::class, 'contactSellers' ]);

@@ -29,7 +29,7 @@
                         label="username"
                         value="id"
                         @select="loadReport( $event )"
-                        url="{{ ns()->route( 'ns.consignment.search.sellers' ) }}"
+                        url="{{ ns()->route( 'ns.consignment.search.sellersForPayout' ) }}"
                 ></ns-search>
             </div>
             {{--<div class="flex -mx-2">--}}
@@ -52,15 +52,23 @@
                     {{--</button>--}}
                 {{--</div>--}}
             {{--</div>--}}
-            <div id="payout-report" class="anim-duration-500 fade-in-entrance">
+            <div id="payout-report" class="anim-duration-500 fade-in-entrance" v-if="selectedConsignorName !== 'None'">
                 <div class="flex w-full">
                     <div class="my-4 flex justify-between w-full">
                         <div class="text-secondary">
                             <ul>
                                 <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'Date : %s' ), ns()->date->getNowFormatted() ) }}</li>
                                 <li class="pb-1 border-b border-dashed">{{ __( 'Document : Consignor Sales Report' ) }}</li>
-                                <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'Consignor : %s' ), '{' . '{selectedConsignorName}' . '}' ) }}</li>
                                 <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'By : %s' ), Auth::user()->username ) }}</li>
+                                <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'Username : %s' ), '{' . '{selectedConsignorName}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'Registered Email : %s' ), '{' . '{selectedConsignorEmail}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed">{{ sprintf( __( 'Payout Pref: %s' ), '{' . '{selectedConsignorPayourPreference}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed" v-if="selectedConsignorSharedEmail !== 'not set'">{{ sprintf( __( 'Shared Email : %s' ), '{' . '{selectedConsignorSharedEmail}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed" v-if="selectedConsignorPhone !== 'not set'">{{ sprintf( __( 'Phone : %s' ), '{' . '{selectedConsignorPhone}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed" v-if="selectedConsignorPaypal !== 'not set'">{{ sprintf( __( 'Paypal : %s' ), '{' . '{selectedConsignorPaypal}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed" v-if="selectedConsignorProfileName !== 'not set'">{{ sprintf( __( 'Name : %s' ), '{' . '{selectedConsignorProfileName}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed" v-if="selectedConsignorAddress !== 'not set'">{{ sprintf( __( 'Address : %s' ), '{' . '{selectedConsignorAddress}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed" v-if="selectedConsignorNotes !== 'not set'">{{ sprintf( __( 'Notes : %s' ), '{' . '{selectedConsignorNotes}' . '}' ) }}</li>
                             </ul>
                         </div>
                         <div>
@@ -162,6 +170,14 @@
                     users: [],
                     summary: {},
                     selectedConsignorName: 'None',
+                    selectedConsignorEmail: 'None',
+                    selectedConsignorSharedEmail: 'None',
+                    selectedConsignorPhone: 'None',
+                    selectedConsignorPaypal: 'None',
+                    selectedConsignorAddress: 'None',
+                    selectedConsignorPayourPreference: 'None',
+                    selectedConsignorNotes: 'None',
+                    selectedConsignorProfileName: 'None',
                     selectedUser: '',
                     reportType: {
                         label: __( 'Report Type' ),
@@ -301,7 +317,31 @@
                 loadReport( $consignor ) {
 
                     console.log('loadReport, user_id: ' + $consignor.id);
-                    this.selectedConsignorName = $consignor.username;
+
+                    // System username & email
+                    this.selectedConsignorName              = $consignor.username ? $consignor.username : 'not set';
+                    this.selectedConsignorEmail             = $consignor.email ? $consignor.email : 'not set';
+
+                    // Payout Preferences
+                    this.selectedConsignorSharedEmail       = $consignor.shared_email ? $consignor.shared_email : 'not set';
+                    this.selectedConsignorPhone             = $consignor.phone ? $consignor.phone : 'not set';
+                    this.selectedConsignorPaypal            = $consignor.paypal_email ? $consignor.paypal_email : 'not set';
+                    this.selectedConsignorPayourPreference  = $consignor.payout_preference ? $consignor.payout_preference : 'not set';
+                    this.selectedConsignorNotes             = $consignor.notes ? $consignor.notes : 'not set';
+                    if ($consignor.street || $consignor.city || $consignor.state || $consignor.zip) {
+                        this.selectedConsignorAddress       = $consignor.street + ', ' + $consignor.city + ', ' + $consignor.state + ', ' + $consignor.zip;
+                    } else {
+                        this.selectedConsignorAddress       = 'not set'
+                    }
+
+                    // User Profile Data
+                    if ($consignor.first_name || $consignor.second_name) {
+                        this.selectedConsignorProfileName   = $consignor.first_name + ' ' + $consignor.second_name;
+                    } else {
+                        this.selectedConsignorProfileName       = 'not set'
+                    }
+
+
 
                     if ( this.startDate === null || this.endDate ===null ) {
                         return nsSnackBar.error( __( 'Unable to proceed. Select a correct time range.' ) ).subscribe();
@@ -315,10 +355,10 @@
                     }
 
                     nsHttpClient.post( '/dashboard/consignment/reports/consignor-sales-report', {
-                        startDate: this.startDate,
-                        endDate: this.endDate,
+                        //startDate: this.startDate,
+                        //endDate: this.endDate,
                         //type: this.reportType.value,
-                        user_id: this.filterUser.value,
+                        //user_id: this.filterUser.value,
                         search: $consignor.id,
                     }).subscribe({
                         next: response => {
