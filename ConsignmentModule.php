@@ -34,12 +34,16 @@ class ConsignmentModule extends Module
                         'icon'   => 'la-tools',
                         'href'    =>    url( 'dashboard/consignment/index-admin' )
                     ],
-                    'ConsignmentPayouts'    =>    [
-                        'label'   =>    __( 'Consignment Payouts' ),
-                        'permissions' => [ 'nexopos.consignment.manage-payouts' ],
-                        'icon'   => 'la-comment-dollar',
-                        'href'    =>    url( 'dashboard/consignment/index-payouts' )
-                    ],
+
+//  TODO: Create a consignment payouts crud that can be used to track payouts
+//
+//                    'ConsignmentPayouts'    =>    [
+//                        'label'   =>    __( 'Consignment Payouts' ),
+//                        'permissions' => [ 'nexopos.consignment.manage-payouts' ],
+//                        'icon'   => 'la-comment-dollar',
+//                        'href'    =>    url( 'dashboard/consignment/index-payouts' )
+//                    ],
+
                 ]
             );
 
