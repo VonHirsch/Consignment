@@ -67,6 +67,7 @@ class ProductCrud extends CrudService
      * @param array
      */
     public $relations   =  [
+        [ 'nexopos_users as user', 'nexopos_products.author', '=', 'user.id' ],
         [ 'nexopos_products_unit_quantities as unit', 'nexopos_products.id', '=', 'unit.product_id' ],
         ];
 
@@ -98,6 +99,7 @@ class ProductCrud extends CrudService
      */
     public $pick = [
         'unit' => [ 'quantity', 'sale_price_edit' ],
+        'user' => [ 'username' ],
     ];
 
     /**
@@ -131,7 +133,8 @@ class ProductCrud extends CrudService
         'barcode_type',
         'sku',
         'unit_group',
-        'author',     // if you include author in fillable, there's logic in the CrudService to overwrite it with Auth::Id, which I've modified to skip when the crud model is a Product
+        'author',     // if you include author in fillable, there's logic in the CrudService to overwrite it with the current Auth::Id, which I've modified to skip when the crud model is a Product
+                        // It was modified so that admin's can edit items without taking ownership of them
         'category_id',
         'type'
     ];
@@ -169,7 +172,7 @@ class ProductCrud extends CrudService
     public function hook( $query ): void
     {
         if ( ! empty( request()->query( 'author' ) ) ) {
-            $query->where( 'author', request()->query( 'author' ) );
+            $query->where( 'nexopos_products.author', request()->query( 'author' ) );
         }
     }
 
@@ -689,7 +692,7 @@ class ProductCrud extends CrudService
 //                '$sort'         =>  false
 //            ],
             'name'  =>  [
-                'label'  =>  __( 'Name' ),
+                'label'  =>  __( 'Item' ),
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
@@ -763,6 +766,11 @@ class ProductCrud extends CrudService
                 '$direction'    =>  '',
                 '$sort'         =>  false
             ],
+            'user_username'  =>  [
+                'label'  =>  __( 'Username' ),
+                '$direction'    =>  '',
+                '$sort'         =>  false,
+            ],
 //            'thumbnail_id'  =>  [
 //                'label'  =>  __( 'Thumbnail_id' ),
 //                '$direction'    =>  '',
@@ -795,11 +803,6 @@ class ProductCrud extends CrudService
 //            ],
 //            'searchable'  =>  [
 //                'label'  =>  __( 'Searchable' ),
-//                '$direction'    =>  '',
-//                '$sort'         =>  false
-//            ],
-//            'author'  =>  [
-//                'label'  =>  __( 'Author' ),
 //                '$direction'    =>  '',
 //                '$sort'         =>  false
 //            ],
