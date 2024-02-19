@@ -41,8 +41,9 @@
                     <div class="my-4 flex justify-between w-full">
                         <div class="text-primary">
                             <ul>
-                                <li class="pb-1 border-b border-dashed border-box-edge">{{ sprintf( __( 'Product : %s' ), '{' . '{selectedProductName}' . '}' ) }}</li>
-                                <li class="pb-1 border-b border-dashed border-box-edge">{{ sprintf( __( 'Barcode : %s' ), '{' . '{selectedProductBarcode}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed border-box-edge" v-if="selectedProductBarcode !== 'N/A'">{{ sprintf( __( 'Barcode : %s' ), '{' . '{selectedProductBarcode}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed border-box-edge" v-if="selectedProductName !== 'N/A'">{{ sprintf( __( 'Product : %s' ), '{' . '{selectedProductName}' . '}' ) }}</li>
+                                <li class="pb-1 border-b border-dashed border-box-edge" v-if="selectedProductDescription !== 'N/A'">{{ sprintf( __( 'Description : %s' ), '{' . '{selectedProductDescription}' . '}' ) }}</li>
                             </ul>
                         </div>
                         <div>
@@ -104,6 +105,17 @@
                     }
 
                     return this.selectedProduct.barcode;
+                },
+                selectedProductDescription() {
+                    if (this.selectedProduct === null ) {
+                        return __( 'N/A' );
+                    }
+                    if (this.selectedProduct.description) {
+                        return this.selectedProduct.description;
+                    } else {
+                        return __( 'N/A' );
+                    }
+
                 },
             },
             methods: {
