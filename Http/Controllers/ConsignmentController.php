@@ -653,7 +653,7 @@ class ConsignmentController extends DashboardController
     {
         $allSales = $orders->map( function ( $order ) {
             return [
-                'total' => ($order->total_price * .85),     // TODO: calculate this from module settings
+                'total' => ($order->total_price * .82),     // TODO: calculate this from module settings
             ];
         });
 
