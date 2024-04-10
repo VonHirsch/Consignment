@@ -164,6 +164,10 @@ class ProductCrud extends CrudService
     public function __construct()
     {
         parent::__construct();
+        // Filter sorting
+        $this->listWhere    =   [
+            'nexopos_products.author' => [ Auth::id() ],
+        ];
         Hook::addFilter( $this->namespace . '-crud-actions', [ $this, 'addActions' ], 10, 2 );
         $this->productService = app()->make( ProductService::class );
     }
