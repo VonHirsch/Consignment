@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\View;
             <div class="-m-4 flex flex-wrap" id="dashboard-cards">
 
                 <div onclick="location.href='consignorsettings';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-green-400 to-green-600 px-3 py-5">
+                    <div class="flex h-24 flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-green-400 to-green-600 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
-                            <h3 class="text-2xl font-black">
+                            <h3 class="text-2xl font-black leading-tight">
                                 All Payment Prefs
                             </h3>
                         </div>
@@ -25,9 +25,9 @@ use Illuminate\Support\Facades\View;
                 </div>
 
                 <div onclick="location.href='products-all';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-indigo-400 to-indigo-600 px-3 py-5">
+                    <div class="flex h-24 flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-indigo-400 to-indigo-600 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
-                            <h3 class="text-2xl font-black">
+                            <h3 class="text-2xl font-black leading-tight">
                                 All Items
                             </h3>
                         </div>
@@ -35,9 +35,9 @@ use Illuminate\Support\Facades\View;
                 </div>
 
                 <div onclick="location.href='print-labels-by-seller';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-info-secondary to-info-tertiary px-3 py-5">
+                    <div class="flex h-24 flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-info-secondary to-info-tertiary px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
-                            <h3 class="text-2xl font-black">
+                            <h3 class="text-2xl font-black leading-tight">
                                 Labels by Seller
                             </h3>
                         </div>
@@ -45,9 +45,9 @@ use Illuminate\Support\Facades\View;
                 </div>
 
                 <div onclick="location.href='print-labels-by-item';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
+                    <div class="flex h-24 flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
-                            <h3 class="text-2xl font-black">
+                            <h3 class="text-2xl font-black leading-tight">
                                 Labels by Item
                             </h3>
                         </div>
@@ -55,9 +55,9 @@ use Illuminate\Support\Facades\View;
                 </div>
 
                 <div onclick="location.href='reports/payout-sheet';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-red-300 via-red-400 to-red-500 px-3 py-5">
+                    <div class="flex h-24 flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-red-300 via-red-400 to-red-500 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
-                            <h3 class="text-2xl font-black">
+                            <h3 class="text-2xl font-black leading-tight">
                                 Payout Sheets
                             </h3>
                         </div>
@@ -66,10 +66,10 @@ use Illuminate\Support\Facades\View;
 
                 @if ( Auth::user()->allowedTo([ 'manage.options' ], 'some' ) )
                 <div onclick="location.href='options';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
-                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-amber-300 to-amber-500 px-3 py-5">
+                    <div class="flex h-24 flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-purple-400 to-purple-600 px-3 py-5">
                         <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
-                            <h3 class="text-2xl font-black">
-                                Consigment Options
+                            <h3 class="text-2xl font-black leading-tight">
+                                Consignment Options
                             </h3>
                         </div>
                     </div>
