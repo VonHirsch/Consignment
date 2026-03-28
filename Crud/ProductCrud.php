@@ -56,7 +56,7 @@ class ProductCrud extends CrudService
         'create'    =>  'nexopos.consignment',
         'read'      =>  'nexopos.consignment',
         'update'    =>  'nexopos.consignment',
-        'delete'    =>  'nexopos.consignment',
+	    // 'delete'    =>  'nexopos.consignment',
     ];
 
     /**
@@ -163,9 +163,8 @@ class ProductCrud extends CrudService
      */
     public function __construct()
     {
-        parent::__construct();
-        // Filter sorting if !admin-features
-        // TODO: Create separate crud's for the user & admin item screens
+	parent::__construct();
+	// fix sorting issue
         if (!ns()->allowedTo([ 'nexopos.consignment.admin-features' ])) {
             // Filter sorting
             $this->listWhere    =   [
@@ -427,7 +426,8 @@ class ProductCrud extends CrudService
         $inputs[ 'unit_group' ] = 1;    // hardcode to consignment
         $inputs[ 'author' ] = Auth::id();
         $inputs[ 'type' ] = Product::TYPE_MATERIALIZED;
-        $inputs[ 'tax_type'] = 'inclusive';
+	$inputs[ 'tax_type'] = 'exclusive';
+	$inputs[ 'tax_group_id'] = 2; // TODO set 2 for vcf east and 1 for vcf west automatically
 
         //ConsignmentModule::DumpVar($inputs);
 
@@ -455,7 +455,7 @@ class ProductCrud extends CrudService
         $price = $inputs[ 'sale_price_edit'];
         $quantity = $inputs[ 'quantity'];
 
-        if (!is_numeric($price) || $price <= 0) {
+        if (!is_numeric($price) || $price < 0) {
             throw new Exception( __( 'Sale Price must be a positive number.' ) );
         }
 
@@ -463,7 +463,7 @@ class ProductCrud extends CrudService
             throw new Exception( __('Quantity must be a positive whole number.' ) );
         }
 
-        if ($quantity <= 0 || (floor($quantity) != $quantity) ) {
+        if ($quantity < 0 || (floor($quantity) != $quantity) ) {
             throw new Exception( __('Quantity must be a positive whole number.' ) );
         }
 
@@ -847,15 +847,15 @@ class ProductCrud extends CrudService
             'url'           =>      ns()->url( '/dashboard/' . $this->slug . '/edit/' . $entry->id )
         ]);
 
-        $entry->addAction( 'delete', [
-            'label'     =>  __( 'Delete' ),
-            'namespace' =>  'delete',
-            'type'      =>  'DELETE',
-            'url'       =>  ns()->url( '/api/nexopos/v4/crud/consignment.products/' . $entry->id ),
-            'confirm'   =>  [
-                'message'  =>  __( 'Would you like to delete this ?' ),
-            ]
-        ]);
+        // $entry->addAction( 'delete', [
+        //     'label'     =>  __( 'Delete' ),
+        //     'namespace' =>  'delete',
+        //     'type'      =>  'DELETE',
+        //     'url'       =>  ns()->url( '/api/nexopos/v4/crud/consignment.products/' . $entry->id ),
+        //     'confirm'   =>  [
+        //         'message'  =>  __( 'Would you like to delete this ?' ),
+        //     ]
+        // ]);
 
         return $entry;
     }

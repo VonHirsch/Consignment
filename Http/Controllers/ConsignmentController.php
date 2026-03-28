@@ -61,7 +61,18 @@ class ConsignmentController extends DashboardController
             'description' =>  __( 'To add an item, click the round plus button below' ),
             'queryParams' => [
                 'author' => Auth::id(),
-            ],
+	    ],
+	    'actions' => [
+				'delete' => false, // Disable delete action
+				'edit' => [
+					'fields' => [
+						'name' => [
+						'readonly' => true, // Make name field read-only
+						],
+						// ... other editable fields
+					],
+				],
+			],
         ]);
     }
 

@@ -139,7 +139,8 @@ Vue.component( 'label-printing', {
         },
         itemsStyle() {
             return {
-                padding: `${this.form.veritcal_padding || 0}px ${this.form.horizontal_padding || 0}px`
+                padding: `${this.form.veritcal_padding || 0}px 25px`
+                // padding: `${this.form.veritcal_padding || 0}px ${this.form.horizontal_padding || 0}px`
             }
         }
     },
@@ -264,12 +265,13 @@ Vue.component( 'label-printing', {
     mounted() {
         const validation    =   new FormValidation;
         this.fields         =   validation.createFields([
+            // {
+            //     type: 'number',
+            //     label: 'Max Item Name Length',
+            //     name: 'max_item_name_len',
+            //     value: 20
+            // }, 
             {
-                type: 'number',
-                label: 'Max Item Name Length',
-                name: 'max_item_name_len',
-                value: 20
-            }, {
                 type: 'select',
                 label: 'Items Per Row',
                 name: 'max_columns',
@@ -282,16 +284,16 @@ Vue.component( 'label-printing', {
                             value: index +1,
                         }
                     })
-            }, {
-                type: 'number',
-                label: 'Vertical Padding (pixels)',
-                name: 'veritcal_padding',
-                value: 0,
-            }, {
-                type: 'number',
-                label: 'Horizontal Padding (pixels)',
-                name: 'horizontal_padding',
-                value: 5,
+            // }, {
+            //     type: 'number',
+            //     label: 'Vertical Padding (pixels)',
+            //     name: 'veritcal_padding',
+            //     value: 0,
+            // }, {
+            //     type: 'number',
+            //     label: 'Horizontal Padding (pixels)',
+            //     name: 'horizontal_padding',
+            //     value: 25,
             }, {
                 type: 'number',
                 label: 'Barcode Height (pixels)',
@@ -305,7 +307,7 @@ Vue.component( 'label-printing', {
                 type: 'checkbox',
                 label: 'Page Break Between Labels',
                 name: 'page_breaks',
-                value: true,
+                value: false,
             }
             , {
                 type: 'hidden',
@@ -344,9 +346,9 @@ Vue.component( 'label-printing', {
         <label-printing inline-template>
             <div class="flex flex-auto overflow-hidden" v-cloak>
                 <div class="flex-auto overflow-y-scroll ns-scrollbar bg-gray-900 p-10">
-                    <div class="shadow-lg bg-white" id="label-printing-paper">
+                    <div class="shadow-lg bg-white" id="label-printing-paper" style="width: 200px;">
                         <div class="grid" :class="'grid-cols-' + ( form.max_columns || 1 )">
-                            <div class="item border border-black" :style="itemsStyle" v-for="item of itemsToPrint">
+                            <div class="item bordert border-black" :style="[itemsStyle, { marginTop: '10px', marginBottom: '10px' },{breakInside: 'avoid'}]" v-for="item of itemsToPrint">
                                 <h3 class="font-bold text-black text-xl text-center" v-if="visibility.show_store_name">{{ ns()->option->get( 'ns_store_name' ) }}</h3>
 
                                 {{----}}
@@ -372,7 +374,8 @@ Vue.component( 'label-printing', {
                                 {{--LABEL--}}
 
                                 <div class="flex justify-center py-0 text-xs text-truncate" v-if="visibility.show_product_name">
-                                    <span>@{{ item.name.substring(0, (form.max_item_name_len - 1)) }}</span>
+                                    <span>@{{ item.name.substring(0, (30)) }}</span>
+                                    <!-- <span>@{{ item.name.substring(0, (form.max_item_name_len - 1)) }}</span> -->
                                 </div>
                                 <div class="flex justify-center py-0 text-xs" v-if="visibility.show_barcode_text">
                                     <span>@{{ item.selectedUnitQuantity.sale_price | currency }}  - @{{ item.selectedUnitQuantity.barcode.substring(0, 6) }}</span>
@@ -386,10 +389,13 @@ Vue.component( 'label-printing', {
                                     {{--</div>--}}
                                 </div>
 
-                                {{--PAGE BREAK--}}
-                                <div style="page-break-inside:avoid;page-break-after:always" v-if="visibility.page_breaks"></div>
+				{{--PAGE BREAK--}}
+				<div style="page-break-inside:avoid;page-break-after:always;" v-if="visibility.page_breaks"></div>
+
+<!--//save paper when printing at home TODO implement better detection of print paper, in css, only skip this for 8.5x11 event print stations wont have this -->
 
                             </div>
+
                         </div>
                     </div>
                 </div>
