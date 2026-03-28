@@ -3,6 +3,7 @@ namespace Modules\Consignment\Crud;
 
 use App\Models\ProductCategory;
 use App\Models\ProductUnitQuantity;
+use App\Models\TaxGroup;
 use App\Models\UnitGroup;
 use App\Services\BarcodeService;
 use App\Services\CurrencyService;
@@ -126,6 +127,7 @@ class ProductCrud extends CrudService
     public $fillable = [
         'name',
         'tax_type',
+        'tax_group_id',
         //'tax_value',
         //'unit_group',
         'description',
@@ -404,6 +406,7 @@ class ProductCrud extends CrudService
     {
 
         $this->validatePriceAndQty($inputs);
+        $taxGroupId = $this->getDefaultTaxGroupId();
 
         /*
          * Technically we should use the barcodeService to generate this
@@ -426,8 +429,8 @@ class ProductCrud extends CrudService
         $inputs[ 'unit_group' ] = 1;    // hardcode to consignment
         $inputs[ 'author' ] = Auth::id();
         $inputs[ 'type' ] = Product::TYPE_MATERIALIZED;
-	$inputs[ 'tax_type'] = 'exclusive';
-	$inputs[ 'tax_group_id'] = 2; // TODO set 2 for vcf east and 1 for vcf west automatically
+	$inputs[ 'tax_type'] = $this->getDefaultTaxType();
+	$inputs[ 'tax_group_id'] = $taxGroupId;
 
         //ConsignmentModule::DumpVar($inputs);
 
@@ -467,6 +470,24 @@ class ProductCrud extends CrudService
             throw new Exception( __('Quantity must be a positive whole number.' ) );
         }
 
+    }
+
+    private function getDefaultTaxGroupId(): int
+    {
+        $taxGroupId = (int) ns()->option->get( 'ns_consignment_default_tax_group_id', 2 );
+
+        if ( ! TaxGroup::where( 'id', $taxGroupId )->exists() ) {
+            throw new Exception( __( 'Please choose a valid default tax group in Consignment Settings before creating an item.' ) );
+        }
+
+        return $taxGroupId;
+    }
+
+    private function getDefaultTaxType(): string
+    {
+        $taxType = ns()->option->get( 'ns_consignment_default_tax_type', 'exclusive' );
+
+        return in_array( $taxType, [ 'inclusive', 'exclusive' ], true ) ? $taxType : 'exclusive';
     }
 
     /**
@@ -581,8 +602,8 @@ class ProductCrud extends CrudService
                  */
                 $taxService->computeTax(
                     $unitQuantity,
-                    $fields[ 'tax_group_id' ] ?? null,
-                    $fields[ 'tax_type' ] ?? null
+                    $fields[ 'tax_group_id' ] ?? $product->tax_group_id ?? null,
+                    $fields[ 'tax_type' ] ?? $product->tax_type ?? null
                 );
 
                 /**

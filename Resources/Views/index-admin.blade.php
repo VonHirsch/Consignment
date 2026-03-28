@@ -64,6 +64,18 @@ use Illuminate\Support\Facades\View;
                     </div>
                 </div>
 
+                @if ( Auth::user()->allowedTo([ 'manage.options' ], 'some' ) )
+                <div onclick="location.href='options';" style="cursor: pointer;" class="p-4 w-full md:w-1/2 lg:w-1/4">
+                    <div class="flex flex-auto flex-col rounded-lg shadow-lg bg-gradient-to-br from-amber-300 to-amber-500 px-3 py-5">
+                        <div class="w-1 md:w-full flex md:flex-col md:items-start items-center justify-center">
+                            <h3 class="text-2xl font-black">
+                                Consigment Options
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
         </div>
     </div>
 @endsection
