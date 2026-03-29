@@ -662,9 +662,12 @@ class ConsignmentController extends DashboardController
 
     private function getConsignorSalesSummary( $orders )
     {
-        $allSales = $orders->map( function ( $order ) {
+        $commissionFeePercent = max( 0, min( 100, floatval( ns()->option->get( 'ns_consignment_percent_commission_fee', 18 ) ) ) );
+        $consignorShareMultiplier = ( 100 - $commissionFeePercent ) / 100;
+
+        $allSales = $orders->map( function ( $order ) use ( $consignorShareMultiplier ) {
             return [
-                'total' => ($order->total_price * .82),     // TODO: calculate this from module settings
+                'total' => ( $order->total_price * $consignorShareMultiplier ),
             ];
         });
 

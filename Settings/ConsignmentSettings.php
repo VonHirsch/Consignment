@@ -49,6 +49,19 @@ class ConsignmentSettings extends SettingsPage
                         ],
                     ],
                 ],
+                'payouts' => [
+                    'label' => __( 'Payout Defaults' ),
+                    'fields' => [
+                        [
+                            'type' => 'number',
+                            'description' => __( 'Percentage kept as commission or fee before consignor payout. For example, 18 means the consignor receives 82% of the sale amount.' ),
+                            'name' => 'ns_consignment_percent_commission_fee',
+                            'label' => __( 'Percent Commission / Fee' ),
+                            'validation' => 'required|numeric|min:0|max:100',
+                            'value' => ns()->option->get( 'ns_consignment_percent_commission_fee', 18 ),
+                        ],
+                    ],
+                ],
             ],
         ];
     }
