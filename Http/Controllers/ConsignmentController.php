@@ -571,20 +571,20 @@ class ConsignmentController extends DashboardController
 
         $baseQuery = $this->getSalesFeedBaseQuery( $queryStart, $queryEnd );
         $summary = ( clone $baseQuery )
-            ->selectRaw( 'COALESCE(SUM(' . $this->getOrderProductTableName() . '.quantity), 0) as items_sold_count' )
-            ->selectRaw( 'COALESCE(SUM(' . $this->getOrderProductTableName() . '.total_price), 0) as gross_sales_total' )
+            ->selectRaw( 'COALESCE(SUM(order_products.quantity), 0) as items_sold_count' )
+            ->selectRaw( 'COALESCE(SUM(order_products.total_price), 0) as gross_sales_total' )
             ->first();
 
         $lastFiveItems = ( clone $baseQuery )
             ->select([
-                $this->getOrderTableName() . '.created_at as sold_at',
-                $this->getOrderProductTableName() . '.name',
-                $this->getOrderProductTableName() . '.quantity',
-                $this->getOrderProductTableName() . '.unit_price',
-                $this->getOrderProductTableName() . '.total_price as line_total',
+                'orders.created_at as sold_at',
+                'order_products.name',
+                'order_products.quantity',
+                'order_products.unit_price',
+                'order_products.total_price as line_total',
             ])
-            ->orderBy( $this->getOrderTableName() . '.created_at', 'desc' )
-            ->orderBy( $this->getOrderProductTableName() . '.id', 'desc' )
+            ->orderBy( 'orders.created_at', 'desc' )
+            ->orderBy( 'order_products.id', 'desc' )
             ->limit( 5 )
             ->get()
             ->map( function ( $item ) use ( $startAt ) {
@@ -657,14 +657,14 @@ class ConsignmentController extends DashboardController
         $orderProductTable = $this->getOrderProductTableName();
         $categoriesTable = Hook::filter( 'ns-model-table', 'nexopos_products_categories' );
 
-        return DB::table( $orderProductTable )
-            ->join( $orderTable, $orderTable . '.id', '=', $orderProductTable . '.order_id' )
-            ->join( $productsTable, $productsTable . '.id', '=', $orderProductTable . '.product_id' )
-            ->join( $categoriesTable, $categoriesTable . '.id', '=', $productsTable . '.category_id' )
-            ->where( $categoriesTable . '.name', '=', 'Consignment' )
-            ->where( $orderTable . '.payment_status', '=', Order::PAYMENT_PAID )
-            ->where( $orderTable . '.created_at', '>=', $rangeStarts )
-            ->where( $orderTable . '.created_at', '<=', $rangeEnds );
+        return DB::table( $orderProductTable . ' as order_products' )
+            ->join( $orderTable . ' as orders', 'orders.id', '=', 'order_products.order_id' )
+            ->join( $productsTable . ' as products', 'products.id', '=', 'order_products.product_id' )
+            ->join( $categoriesTable . ' as categories', 'categories.id', '=', 'products.category_id' )
+            ->where( 'categories.name', '=', 'Consignment' )
+            ->where( 'orders.payment_status', '=', Order::PAYMENT_PAID )
+            ->where( 'orders.created_at', '>=', $rangeStarts )
+            ->where( 'orders.created_at', '<=', $rangeEnds );
     }
 
     private function getOrderTableName()
