@@ -1,0 +1,1 @@
+Copy to and run these scripts from the NexoPOS Root
