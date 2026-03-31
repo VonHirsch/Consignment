@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Middleware\Authenticate;
-use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use Modules\Consignment\Http\Controllers\ConsignmentController;
 
@@ -17,4 +15,4 @@ use Modules\Consignment\Http\Controllers\ConsignmentController;
 |
 */
 
-// Routes in this file don't seem to be picked up by NexoPOS ...
+Route::get( 'consignment/feed', [ ConsignmentController::class, 'salesFeed' ] );

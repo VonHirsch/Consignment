@@ -533,6 +533,150 @@ class ConsignmentController extends DashboardController
         return ConsignmentSettings::renderForm();
     }
 
+    // ------------------------------------------------------
+    // ESP32 Sales Feed
+    // ------------------------------------------------------
+
+    public function salesFeed( Request $request )
+    {
+        if ( $this->shouldEnforceSalesFeedHttps() && ! $this->requestUsesHttps( $request ) ) {
+            return response()->json([
+                'message' => __( 'HTTPS is required for this endpoint.' ),
+            ], 403 );
+        }
+
+        $configuredToken = trim( (string) env( 'NS_CONSIGNMENT_FEED_TOKEN', '' ) );
+
+        if ( $configuredToken === '' ) {
+            return response()->json([
+                'message' => __( 'The consignment feed token is not configured.' ),
+            ], 500 );
+        }
+
+        if ( ! $this->hasValidSalesFeedToken( $request, $configuredToken ) ) {
+            return response()->json([
+                'message' => __( 'Unauthorized.' ),
+            ], 401 );
+        }
+
+        $startAt = $this->parseSalesFeedStartAt( $request->query( 'start_at' ) );
+
+        if ( ! $startAt instanceof Carbon ) {
+            return $startAt;
+        }
+
+        $windowEnd = ns()->date->getNow();
+        $queryStart = $startAt->copy()->setTimezone( $windowEnd->getTimezone() )->toDateTimeString();
+        $queryEnd = $windowEnd->toDateTimeString();
+
+        $baseQuery = $this->getSalesFeedBaseQuery( $queryStart, $queryEnd );
+        $summary = ( clone $baseQuery )
+            ->selectRaw( 'COALESCE(SUM(' . $this->getOrderProductTableName() . '.quantity), 0) as items_sold_count' )
+            ->selectRaw( 'COALESCE(SUM(' . $this->getOrderProductTableName() . '.total_price), 0) as gross_sales_total' )
+            ->first();
+
+        $lastFiveItems = ( clone $baseQuery )
+            ->select([
+                $this->getOrderTableName() . '.created_at as sold_at',
+                $this->getOrderProductTableName() . '.name',
+                $this->getOrderProductTableName() . '.quantity',
+                $this->getOrderProductTableName() . '.unit_price',
+                $this->getOrderProductTableName() . '.total_price as line_total',
+            ])
+            ->orderBy( $this->getOrderTableName() . '.created_at', 'desc' )
+            ->orderBy( $this->getOrderProductTableName() . '.id', 'desc' )
+            ->limit( 5 )
+            ->get()
+            ->map( function ( $item ) use ( $startAt ) {
+                return [
+                    'sold_at' => Carbon::parse( $item->sold_at )
+                        ->setTimezone( $startAt->getTimezone() )
+                        ->toIso8601String(),
+                    'name' => $item->name,
+                    'quantity' => (float) $item->quantity,
+                    'unit_price' => Currency::define( $item->unit_price )->getRaw(),
+                    'line_total' => Currency::define( $item->line_total )->getRaw(),
+                ];
+            })->values();
+
+        return response()->json([
+            'window_start' => $startAt->toIso8601String(),
+            'window_end' => $windowEnd->copy()->setTimezone( $startAt->getTimezone() )->toIso8601String(),
+            'items_sold_count' => (float) ( $summary->items_sold_count ?? 0 ),
+            'gross_sales_total' => Currency::define( $summary->gross_sales_total ?? 0 )->getRaw(),
+            'last_five_items' => $lastFiveItems,
+        ]);
+    }
+
+    private function shouldEnforceSalesFeedHttps()
+    {
+        return ! in_array( strtolower( (string) app()->environment() ), [ 'local', 'testing' ], true );
+    }
+
+    private function requestUsesHttps( Request $request )
+    {
+        return $request->secure() || strtolower( (string) $request->header( 'x-forwarded-proto' ) ) === 'https';
+    }
+
+    private function hasValidSalesFeedToken( Request $request, string $configuredToken )
+    {
+        $providedToken = $request->bearerToken();
+
+        return is_string( $providedToken ) && hash_equals( $configuredToken, $providedToken );
+    }
+
+    private function parseSalesFeedStartAt( $startAt )
+    {
+        $message = __( 'The start_at query parameter must be a valid ISO 8601 timestamp with timezone offset.' );
+
+        if ( ! is_string( $startAt ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/', $startAt ) ) {
+            return response()->json([
+                'message' => $message,
+                'errors' => [
+                    'start_at' => [ $message ],
+                ],
+            ], 422 );
+        }
+
+        try {
+            return Carbon::parse( $startAt );
+        } catch ( Exception $exception ) {
+            return response()->json([
+                'message' => $message,
+                'errors' => [
+                    'start_at' => [ $message ],
+                ],
+            ], 422 );
+        }
+    }
+
+    private function getSalesFeedBaseQuery( string $rangeStarts, string $rangeEnds )
+    {
+        $orderTable = $this->getOrderTableName();
+        $productsTable = Hook::filter( 'ns-model-table', 'nexopos_products' );
+        $orderProductTable = $this->getOrderProductTableName();
+        $categoriesTable = Hook::filter( 'ns-model-table', 'nexopos_products_categories' );
+
+        return DB::table( $orderProductTable )
+            ->join( $orderTable, $orderTable . '.id', '=', $orderProductTable . '.order_id' )
+            ->join( $productsTable, $productsTable . '.id', '=', $orderProductTable . '.product_id' )
+            ->join( $categoriesTable, $categoriesTable . '.id', '=', $productsTable . '.category_id' )
+            ->where( $categoriesTable . '.name', '=', 'Consignment' )
+            ->where( $orderTable . '.payment_status', '=', Order::PAYMENT_PAID )
+            ->where( $orderTable . '.created_at', '>=', $rangeStarts )
+            ->where( $orderTable . '.created_at', '<=', $rangeEnds );
+    }
+
+    private function getOrderTableName()
+    {
+        return Hook::filter( 'ns-model-table', 'nexopos_orders' );
+    }
+
+    private function getOrderProductTableName()
+    {
+        return Hook::filter( 'ns-model-table', 'nexopos_orders_products' );
+    }
+
 
     // ------------------------------------------------------
     // Payout Sheet Report
