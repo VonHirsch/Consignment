@@ -568,23 +568,23 @@ class ConsignmentController extends DashboardController
         $windowEnd = ns()->date->getNow();
         $queryStart = $startAt->copy()->setTimezone( $windowEnd->getTimezone() )->toDateTimeString();
         $queryEnd = $windowEnd->toDateTimeString();
+        $orderTable = $this->getOrderTableName();
+        $orderProductTable = $this->getOrderProductTableName();
 
         $baseQuery = $this->getSalesFeedBaseQuery( $queryStart, $queryEnd );
-        $summary = ( clone $baseQuery )
-            ->selectRaw( 'COALESCE(SUM(order_products.quantity), 0) as items_sold_count' )
-            ->selectRaw( 'COALESCE(SUM(order_products.total_price), 0) as gross_sales_total' )
-            ->first();
+        $itemsSoldCount = (float) ( ( clone $baseQuery )->sum( $orderProductTable . '.quantity' ) ?? 0 );
+        $grossSalesTotal = Currency::define( ( clone $baseQuery )->sum( $orderProductTable . '.total_price' ) ?? 0 )->getRaw();
 
         $lastFiveItems = ( clone $baseQuery )
             ->select([
-                'orders.created_at as sold_at',
-                'order_products.name',
-                'order_products.quantity',
-                'order_products.unit_price',
-                'order_products.total_price as line_total',
+                $orderTable . '.created_at as sold_at',
+                $orderProductTable . '.name',
+                $orderProductTable . '.quantity',
+                $orderProductTable . '.unit_price',
+                $orderProductTable . '.total_price as line_total',
             ])
-            ->orderBy( 'orders.created_at', 'desc' )
-            ->orderBy( 'order_products.id', 'desc' )
+            ->orderBy( $orderTable . '.created_at', 'desc' )
+            ->orderBy( $orderProductTable . '.id', 'desc' )
             ->limit( 5 )
             ->get()
             ->map( function ( $item ) use ( $startAt ) {
@@ -602,8 +602,8 @@ class ConsignmentController extends DashboardController
         return response()->json([
             'window_start' => $startAt->toIso8601String(),
             'window_end' => $windowEnd->copy()->setTimezone( $startAt->getTimezone() )->toIso8601String(),
-            'items_sold_count' => (float) ( $summary->items_sold_count ?? 0 ),
-            'gross_sales_total' => Currency::define( $summary->gross_sales_total ?? 0 )->getRaw(),
+            'items_sold_count' => $itemsSoldCount,
+            'gross_sales_total' => $grossSalesTotal,
             'last_five_items' => $lastFiveItems,
         ]);
     }
@@ -657,14 +657,14 @@ class ConsignmentController extends DashboardController
         $orderProductTable = $this->getOrderProductTableName();
         $categoriesTable = Hook::filter( 'ns-model-table', 'nexopos_products_categories' );
 
-        return DB::table( $orderProductTable . ' as order_products' )
-            ->join( $orderTable . ' as orders', 'orders.id', '=', 'order_products.order_id' )
-            ->join( $productsTable . ' as products', 'products.id', '=', 'order_products.product_id' )
-            ->join( $categoriesTable . ' as categories', 'categories.id', '=', 'products.category_id' )
-            ->where( 'categories.name', '=', 'Consignment' )
-            ->where( 'orders.payment_status', '=', Order::PAYMENT_PAID )
-            ->where( 'orders.created_at', '>=', $rangeStarts )
-            ->where( 'orders.created_at', '<=', $rangeEnds );
+        return DB::table( $orderProductTable )
+            ->join( $orderTable, $orderTable . '.id', '=', $orderProductTable . '.order_id' )
+            ->join( $productsTable, $productsTable . '.id', '=', $orderProductTable . '.product_id' )
+            ->join( $categoriesTable, $categoriesTable . '.id', '=', $productsTable . '.category_id' )
+            ->where( $categoriesTable . '.name', '=', 'Consignment' )
+            ->where( $orderTable . '.payment_status', '=', Order::PAYMENT_PAID )
+            ->where( $orderTable . '.created_at', '>=', $rangeStarts )
+            ->where( $orderTable . '.created_at', '<=', $rangeEnds );
     }
 
     private function getOrderTableName()
