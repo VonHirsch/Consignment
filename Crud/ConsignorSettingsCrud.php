@@ -189,6 +189,10 @@ class ConsignorSettingsCrud extends CrudService
      */
     public function getForm( $entry = null )
     {
+        if ( $entry instanceof ConsignorSettings ) {
+            ConsignmentModule::CheckAuthor( $entry->author );
+        }
+
         return [
             'main' =>  [
                 'label'         =>  __( 'Name' ),
