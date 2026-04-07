@@ -221,6 +221,7 @@ class ProductCrud extends CrudService
     {
 
         if ( $entry instanceof Product ) {
+            ConsignmentModule::CheckAuthor( $entry->author );
 
             $unitGroup = UnitGroup::where( 'id', $entry->unit_group )->with( 'units' )->first() ?? [];
 
