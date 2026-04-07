@@ -653,14 +653,12 @@ class ConsignmentController extends DashboardController
     private function getSalesFeedBaseQuery( string $rangeStarts, string $rangeEnds )
     {
         $orderTable = $this->getOrderTableName();
-        $productsTable = Hook::filter( 'ns-model-table', 'nexopos_products' );
         $orderProductTable = $this->getOrderProductTableName();
         $categoriesTable = Hook::filter( 'ns-model-table', 'nexopos_products_categories' );
 
         return DB::table( $orderProductTable )
             ->join( $orderTable, $orderTable . '.id', '=', $orderProductTable . '.order_id' )
-            ->join( $productsTable, $productsTable . '.id', '=', $orderProductTable . '.product_id' )
-            ->join( $categoriesTable, $categoriesTable . '.id', '=', $productsTable . '.category_id' )
+            ->join( $categoriesTable, $categoriesTable . '.id', '=', $orderProductTable . '.product_category_id' )
             ->where( $categoriesTable . '.name', '=', 'Consignment' )
             ->where( $orderTable . '.payment_status', '=', Order::PAYMENT_PAID )
             ->where( $orderTable . '.created_at', '>=', $rangeStarts )
