@@ -540,7 +540,7 @@ class ConsignmentController extends DashboardController
     public function salesFeed( Request $request )
     {
         if ( $this->shouldEnforceSalesFeedHttps() && ! $this->requestUsesHttps( $request ) ) {
-            return response()->json([
+            return $this->salesFeedJsonResponse([
                 'message' => __( 'HTTPS is required for this endpoint.' ),
             ], 403 );
         }
@@ -548,13 +548,13 @@ class ConsignmentController extends DashboardController
         $configuredToken = trim( (string) env( 'NS_CONSIGNMENT_FEED_TOKEN', '' ) );
 
         if ( $configuredToken === '' ) {
-            return response()->json([
+            return $this->salesFeedJsonResponse([
                 'message' => __( 'The consignment feed token is not configured.' ),
             ], 500 );
         }
 
         if ( ! $this->hasValidSalesFeedToken( $request, $configuredToken ) ) {
-            return response()->json([
+            return $this->salesFeedJsonResponse([
                 'message' => __( 'Unauthorized.' ),
             ], 401 );
         }
@@ -599,12 +599,21 @@ class ConsignmentController extends DashboardController
                 ];
             })->values();
 
-        return response()->json([
+        return $this->salesFeedJsonResponse([
             'window_start' => $startAt->toIso8601String(),
             'window_end' => $windowEnd->copy()->setTimezone( $startAt->getTimezone() )->toIso8601String(),
             'items_sold_count' => $itemsSoldCount,
             'gross_sales_total' => $grossSalesTotal,
             'last_five_items' => $lastFiveItems,
+        ]);
+    }
+
+    private function salesFeedJsonResponse( array $payload, int $status = 200 )
+    {
+        return response()->json( $payload, $status )->withHeaders([
+            'Cache-Control' => 'no-store, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
         ]);
     }
 
@@ -630,7 +639,7 @@ class ConsignmentController extends DashboardController
         $message = __( 'The start_at query parameter must be a valid ISO 8601 timestamp with timezone offset.' );
 
         if ( ! is_string( $startAt ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/', $startAt ) ) {
-            return response()->json([
+            return $this->salesFeedJsonResponse([
                 'message' => $message,
                 'errors' => [
                     'start_at' => [ $message ],
@@ -641,7 +650,7 @@ class ConsignmentController extends DashboardController
         try {
             return Carbon::parse( $startAt );
         } catch ( Exception $exception ) {
-            return response()->json([
+            return $this->salesFeedJsonResponse([
                 'message' => $message,
                 'errors' => [
                     'start_at' => [ $message ],
