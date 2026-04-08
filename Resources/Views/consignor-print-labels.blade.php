@@ -298,7 +298,7 @@ Vue.component( 'label-printing', {
                 type: 'number',
                 label: 'Barcode Height (pixels)',
                 name: 'barcode_height',
-                value: 30
+                value: 36
             }
         ]);
 
